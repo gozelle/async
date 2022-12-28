@@ -1,0 +1,10 @@
+github.com/gozelle/go-difflib v1.0.0 h1:BIQXTH387TRKUtDGMTaPmoFKKWZQMRR4mSxxcPLOjXQ=
+github.com/gozelle/go-difflib v1.0.0/go.mod h1:PcDy306aUy3I8kB5ohutXpbhkgQlygtcBjf+pENv2gY=
+github.com/gozelle/go-spew v1.1.10 h1:kFDq5IDd/Wk3l7UutORhveCt5fUdW8b9afnDYtuHmEc=
+github.com/gozelle/go-spew v1.1.10/go.mod h1:qwUFQBhiE5zwtTAfe/m87+73t2jRbNHwGOvs+FgYx+8=
+github.com/gozelle/objx v0.5.10 h1:lbYJdhSwnljJNpyRRbbqJt+uF3z66om0RsiR175sHAk=
+github.com/gozelle/objx v0.5.10/go.mod h1:3muRr1Da1mCg3D+wYBicuZaHtGbvfLCgewfYJoz7cbs=
+github.com/gozelle/testify v1.8.11 h1:HDi4d07tDlTLfAc1ie9yR/ZBr3r4HR9866GA5uHSwdA=
+github.com/gozelle/testify v1.8.11/go.mod h1:vYSBvyNev2JwOWCafPzpqdL3xuxy79bECwKkP5a7Y1c=
+github.com/gozelle/yaml v0.0.0-20221214152138-81b78a92d903 h1:Z5bL8fjqThaLRa3MdQoESurwiUh8KZksKRQvLWY+h/c=
+github.com/gozelle/yaml v0.0.0-20221214152138-81b78a92d903/go.mod h1:0Pp3KXweJJtxd5jzd6y3qW2DpjEFAlYc7oRDtuhMFjg=
