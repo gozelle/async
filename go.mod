@@ -1,4 +1,4 @@
-module github.com/gozelle/flow
+module github.com/gozelle/godash
 
 go 1.18
 
