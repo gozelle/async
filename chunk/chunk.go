@@ -2,7 +2,7 @@ package chunk
 
 import (
 	"fmt"
-	"github.com/gozelle/flow"
+	"github.com/gozelle/godash"
 )
 
 // Int64s 将 [a,b] 范围按指定步长分段

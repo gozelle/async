@@ -2,7 +2,7 @@ package race
 
 import (
 	"context"
-	"github.com/gozelle/flow"
+	"github.com/gozelle/godash"
 	"github.com/gozelle/testify/require"
 	"testing"
 	"time"

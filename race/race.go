@@ -3,7 +3,7 @@ package race
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/flow"
+	"github.com/gozelle/godash"
 	"sync"
 	"time"
 )
