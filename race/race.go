@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Race(ctx context.Context, handlers ...flow.Handler) (result any, err error) {
+func Race(ctx context.Context, handlers ...godash.Handler) (result any, err error) {
 	
 	if len(handlers) == 0 {
 		err = fmt.Errorf("no handlers")
@@ -20,14 +20,14 @@ func Race(ctx context.Context, handlers ...flow.Handler) (result any, err error)
 		cancel()
 	}()
 	
-	vr := flow.NewValue()
-	ve := flow.NewValue()
+	vr := godash.NewValue()
+	ve := godash.NewValue()
 	
 	wg := sync.WaitGroup{}
 	wg.Add(len(handlers))
 	
 	for _, f := range handlers {
-		go func(f flow.Handler) {
+		go func(f godash.Handler) {
 			go func() {
 				select {
 				case <-cctx.Done():
@@ -57,7 +57,7 @@ func Race(ctx context.Context, handlers ...flow.Handler) (result any, err error)
 	return
 }
 
-func DelayRace(ctx context.Context, handlers ...*flow.DelayHandler) (result any, err error) {
+func DelayRace(ctx context.Context, handlers ...*godash.DelayHandler) (result any, err error) {
 	
 	if len(handlers) == 0 {
 		err = fmt.Errorf("no handlers")
@@ -69,14 +69,14 @@ func DelayRace(ctx context.Context, handlers ...*flow.DelayHandler) (result any,
 		cancel()
 	}()
 	
-	vr := flow.NewValue()
-	ve := flow.NewValue()
+	vr := godash.NewValue()
+	ve := godash.NewValue()
 	
 	wg := sync.WaitGroup{}
 	wg.Add(len(handlers))
 	
 	for _, f := range handlers {
-		go func(f *flow.DelayHandler) {
+		go func(f *godash.DelayHandler) {
 			go func() {
 				select {
 				case <-cctx.Done():

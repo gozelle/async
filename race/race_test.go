@@ -23,13 +23,13 @@ func TestRace(t *testing.T) {
 }
 
 func TestDelayRace(t *testing.T) {
-	r, err := DelayRace(context.Background(), &flow.DelayHandler{
+	r, err := DelayRace(context.Background(), &godash.DelayHandler{
 		Delay: 500 * time.Millisecond,
 		Handler: func(ctx context.Context) (result any, err error) {
 			result = 1
 			return
 		},
-	}, &flow.DelayHandler{
+	}, &godash.DelayHandler{
 		Delay: 2000 * time.Millisecond,
 		Handler: func(ctx context.Context) (result any, err error) {
 			result = 2

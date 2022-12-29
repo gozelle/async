@@ -1,4 +1,4 @@
-package flow
+package godash
 
 import (
 	"context"
@@ -33,4 +33,9 @@ func (r *Value) GetValue() any {
 	defer r.lock.RUnlock()
 	
 	return r.value
+}
+
+type Int64Range struct {
+	Begin int64
+	End   int64
 }
