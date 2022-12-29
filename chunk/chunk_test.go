@@ -14,6 +14,7 @@ func TestInt64Ranges(t *testing.T) {
 	}
 
 	testCases := []testCase{
+		{Nums: []int64{0, 0, 3}, Result: [][]int64{{0, 0}}},
 		{Nums: []int64{0, 1, 3}, Result: [][]int64{{0, 1}}},
 		{Nums: []int64{0, 9, 3}, Result: [][]int64{{0, 2}, {3, 5}, {6, 8}, {9, 9}}},
 		{Nums: []int64{1, 5, 2}, Result: [][]int64{{1, 2}, {3, 4}, {5, 5}}},
