@@ -39,3 +39,7 @@ type Int64Range struct {
 	Begin int64
 	End   int64
 }
+
+func (i Int64Range) Len() int64 {
+	return i.End - i.Begin + 1
+}
