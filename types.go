@@ -40,6 +40,9 @@ type Int64Range struct {
 	End   int64
 }
 
+// Len 返回 Range 的有效长度
+// Begin=0, End=0  则： Len = 1
+// Begin=1, End=2  则:  Len = 2
 func (i Int64Range) Len() int64 {
 	return i.End - i.Begin + 1
 }
