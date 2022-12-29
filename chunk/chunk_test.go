@@ -6,14 +6,15 @@ import (
 )
 
 func TestInt64Ranges(t *testing.T) {
-	
+
 	type testCase struct {
 		Nums   []int64
 		Result [][]int64
 		Error  bool
 	}
-	
+
 	testCases := []testCase{
+		{Nums: []int64{0, 1, 3}, Result: [][]int64{{0, 1}}},
 		{Nums: []int64{0, 9, 3}, Result: [][]int64{{0, 2}, {3, 5}, {6, 8}, {9, 9}}},
 		{Nums: []int64{1, 5, 2}, Result: [][]int64{{1, 2}, {3, 4}, {5, 5}}},
 		{Nums: []int64{1, 8, 2}, Result: [][]int64{{1, 2}, {3, 4}, {5, 6}, {7, 8}}},
@@ -24,7 +25,7 @@ func TestInt64Ranges(t *testing.T) {
 		{Nums: []int64{-10, 10, -1}, Error: true},
 		{Nums: []int64{-10, 10, 0}, Error: true},
 	}
-	
+
 	for _, v := range testCases {
 		r, err := Int64s(v.Nums[0], v.Nums[1], v.Nums[2])
 		if v.Error {
