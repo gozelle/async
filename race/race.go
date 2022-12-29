@@ -2,12 +2,18 @@ package race
 
 import (
 	"context"
+	"fmt"
 	"github.com/gozelle/flow"
 	"sync"
 	"time"
 )
 
 func Race(ctx context.Context, handlers ...flow.Handler) (result any, err error) {
+	
+	if len(handlers) == 0 {
+		err = fmt.Errorf("no handlers")
+		return
+	}
 	
 	cctx, cancel := context.WithCancel(ctx)
 	defer func() {
@@ -52,6 +58,12 @@ func Race(ctx context.Context, handlers ...flow.Handler) (result any, err error)
 }
 
 func DelayRace(ctx context.Context, handlers ...*flow.DelayHandler) (result any, err error) {
+	
+	if len(handlers) == 0 {
+		err = fmt.Errorf("no handlers")
+		return
+	}
+	
 	cctx, cancel := context.WithCancel(ctx)
 	defer func() {
 		cancel()
