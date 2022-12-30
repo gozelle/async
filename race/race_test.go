@@ -23,19 +23,47 @@ func TestRace(t *testing.T) {
 }
 
 func TestDelayRace(t *testing.T) {
-	r, err := DelayRace(context.Background(), &godash.DelayHandler{
-		Delay: 500 * time.Millisecond,
-		Handler: func(ctx context.Context) (result any, err error) {
-			result = 1
-			return
+	handlers := []*godash.DelayHandler{
+		{
+			Delay: 0,
+			Handler: func(ctx context.Context) (result any, err error) {
+				result = 1
+				return
+			},
 		},
-	}, &godash.DelayHandler{
-		Delay: 2000 * time.Millisecond,
-		Handler: func(ctx context.Context) (result any, err error) {
-			result = 2
-			return
+		{
+			Delay: 2 * time.Second,
+			Handler: func(ctx context.Context) (result any, err error) {
+				result = 3
+				return
+			},
 		},
-	})
+		{
+			Delay: 3 * time.Second,
+			Handler: func(ctx context.Context) (result any, err error) {
+				result = 2
+				return
+			},
+		},
+	}
+	
+	var handlers2 []*godash.DelayHandler
+	for _, h := range handlers {
+		v := h
+		func(v *godash.DelayHandler) {
+			handlers2 = append(
+				handlers2,
+				&godash.DelayHandler{
+					Delay: v.Delay,
+					Handler: func(ctx context.Context) (result any, err error) {
+						return v.Handler(ctx)
+					},
+				},
+			)
+		}(v)
+	}
+	
+	r, err := DelayRace(context.Background(), handlers2...)
 	require.NoError(t, err)
 	require.Equal(t, r.(int), 1)
 }
