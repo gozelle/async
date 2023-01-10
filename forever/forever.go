@@ -13,17 +13,18 @@ func Run(ctx context.Context, interval time.Duration, runner func(ctx context.Co
 		err = fmt.Errorf("interval expect greater than 1 second")
 		return
 	}
-	ticker := time.NewTicker(interval)
+	timer := time.NewTimer(interval)
 	defer func() {
-		ticker.Stop()
+		timer.Stop()
 	}()
 	for {
 		select {
-		case <-ticker.C:
+		case <-timer.C:
 			err = runner(ctx)
 			if err != nil {
 				return
 			}
+			timer.Reset(interval)
 		case <-ctx.Done():
 			return
 		}
