@@ -1,40 +1,18 @@
-package godash
+package async
 
 import (
 	"context"
-	"sync"
 	"time"
 )
 
-type Handler func(ctx context.Context) (result any, err error)
+type Runner func(ctx context.Context) (result any, err error)
 
-type DelayHandler struct {
-	Delay   time.Duration
-	Handler Handler
+type DelayRunner struct {
+	Delay  time.Duration
+	Runner Runner
 }
 
-func NewValue() *Value {
-	return &Value{}
-}
-
-type Value struct {
-	value any
-	lock  sync.RWMutex
-}
-
-func (r *Value) SetValue(val any) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	r.value = val
-}
-
-func (r *Value) GetValue() any {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-	
-	return r.value
-}
-
+// Int64Range 记录 Int64 区间
 type Int64Range struct {
 	Begin int64
 	End   int64

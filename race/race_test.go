@@ -2,7 +2,7 @@ package race
 
 import (
 	"context"
-	"github.com/gozelle/godash"
+	"github.com/gozelle/async"
 	"github.com/gozelle/testify/require"
 	"testing"
 	"time"
@@ -23,40 +23,40 @@ func TestRace(t *testing.T) {
 }
 
 func TestDelayRace(t *testing.T) {
-	handlers := []*godash.DelayHandler{
+	handlers := []*async.DelayRunner{
 		{
 			Delay: 0,
-			Handler: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result any, err error) {
 				result = 1
 				return
 			},
 		},
 		{
 			Delay: 2 * time.Second,
-			Handler: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result any, err error) {
 				result = 3
 				return
 			},
 		},
 		{
 			Delay: 3 * time.Second,
-			Handler: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result any, err error) {
 				result = 2
 				return
 			},
 		},
 	}
 	
-	var handlers2 []*godash.DelayHandler
+	var handlers2 []*async.DelayRunner
 	for _, h := range handlers {
 		v := h
-		func(v *godash.DelayHandler) {
+		func(v *async.DelayRunner) {
 			handlers2 = append(
 				handlers2,
-				&godash.DelayHandler{
+				&async.DelayRunner{
 					Delay: v.Delay,
-					Handler: func(ctx context.Context) (result any, err error) {
-						return v.Handler(ctx)
+					Runner: func(ctx context.Context) (result any, err error) {
+						return v.Runner(ctx)
 					},
 				},
 			)

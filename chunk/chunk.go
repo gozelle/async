@@ -2,7 +2,7 @@ package chunk
 
 import (
 	"fmt"
-	"github.com/gozelle/godash"
+	"github.com/gozelle/async"
 )
 
 // Int64s 将 [a,b] 范围按指定步长分段
@@ -16,7 +16,7 @@ import (
 //          // ..
 //      }
 // }
-func Int64s(a, b, step int64) (ranges []godash.Int64Range, err error) {
+func Int64s(a, b, step int64) (ranges []async.Int64Range, err error) {
 	if step <= 0 {
 		err = fmt.Errorf("expect step > 0,got: step=%d", step)
 		return
@@ -28,7 +28,7 @@ func Int64s(a, b, step int64) (ranges []godash.Int64Range, err error) {
 	}
 	
 	if a == b {
-		ranges = append(ranges, godash.Int64Range{Begin: a, End: b})
+		ranges = append(ranges, async.Int64Range{Begin: a, End: b})
 		return
 	}
 	
@@ -38,9 +38,9 @@ func Int64s(a, b, step int64) (ranges []godash.Int64Range, err error) {
 		aa := a + i*step + 1
 		bb := a + (i+1)*step
 		if bb < b && aa < b {
-			ranges = append(ranges, godash.Int64Range{Begin: aa, End: bb})
+			ranges = append(ranges, async.Int64Range{Begin: aa, End: bb})
 		} else {
-			ranges = append(ranges, godash.Int64Range{Begin: aa, End: b})
+			ranges = append(ranges, async.Int64Range{Begin: aa, End: b})
 			if bb >= b {
 				break
 			}

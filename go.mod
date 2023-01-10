@@ -1,4 +1,4 @@
-module github.com/gozelle/godash
+module github.com/gozelle/async
 
 go 1.18
 
