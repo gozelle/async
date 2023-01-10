@@ -1,6 +1,9 @@
 package async
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 func NewValue() *Value {
 	return &Value{}
@@ -50,12 +53,7 @@ func (r *Values) GetValues() []any {
 	return values
 }
 
-type ChanValue struct {
-	Value any
-	Error error
-}
-
-type ChanValues struct {
-	Values []any
-	Error  error
+type NamedInterval struct {
+	Name     string
+	Interval time.Duration
 }

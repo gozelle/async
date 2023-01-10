@@ -1,17 +1,5 @@
 package async
 
-import (
-	"context"
-	"time"
-)
-
-type Runner func(ctx context.Context) (result any, err error)
-
-type DelayRunner struct {
-	Delay  time.Duration
-	Runner Runner
-}
-
 // Int64Range 记录 Int64 区间
 type Int64Range struct {
 	Begin int64

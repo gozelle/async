@@ -12,14 +12,14 @@ const minQueueLen = 16
 
 // Queue represents a single instance of the queue data structure.
 type Queue struct {
-	buf               []interface{}
+	buf               []any
 	head, tail, count int
 }
 
 // New constructs and returns a new Queue.
 func New() *Queue {
 	return &Queue{
-		buf: make([]interface{}, minQueueLen),
+		buf: make([]any, minQueueLen),
 	}
 }
 
@@ -31,7 +31,7 @@ func (q *Queue) Length() int {
 // resizes the queue to fit exactly twice its current contents
 // this can result in shrinking if the queue is less than half-full
 func (q *Queue) resize() {
-	newBuf := make([]interface{}, q.count<<1)
+	newBuf := make([]any, q.count<<1)
 	
 	if q.tail > q.head {
 		copy(newBuf, q.buf[q.head:q.tail])
@@ -46,7 +46,7 @@ func (q *Queue) resize() {
 }
 
 // Add puts an element on the end of the queue.
-func (q *Queue) Add(elem interface{}) {
+func (q *Queue) Add(elem any) {
 	if q.count == len(q.buf) {
 		q.resize()
 	}
@@ -57,11 +57,14 @@ func (q *Queue) Add(elem interface{}) {
 	q.count++
 }
 
-// Peek returns the element at the head of the queue. This call panics
-// if the queue is empty.
-func (q *Queue) Peek() interface{} {
+func (q *Queue) Count() int {
+	return q.count
+}
+
+// Peek returns the element at the head of the queue.
+func (q *Queue) Peek() any {
 	if q.count <= 0 {
-		panic("queue: Peek() called on empty queue")
+		return nil
 	}
 	return q.buf[q.head]
 }
@@ -70,7 +73,7 @@ func (q *Queue) Peek() interface{} {
 // invalid, the call will panic. This method accepts both positive and
 // negative index values. Index 0 refers to the first element, and
 // index -1 refers to the last.
-func (q *Queue) Get(i int) interface{} {
+func (q *Queue) Get(i int) any {
 	// If indexing backwards, convert to positive index.
 	if i < 0 {
 		i += q.count
@@ -84,7 +87,7 @@ func (q *Queue) Get(i int) interface{} {
 
 // Remove removes and returns the element from the front of the queue. If the
 // queue is empty, the call will panic.
-func (q *Queue) Remove() interface{} {
+func (q *Queue) Remove() any {
 	if q.count <= 0 {
 		panic("queue: Remove() called on empty queue")
 	}

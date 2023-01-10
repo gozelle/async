@@ -17,7 +17,8 @@ type listener struct {
 	handler func(args ...any)
 }
 
-func Subscribe(eventID string, handler func(args ...any)) (seq int) {
+// Subscribe 订阅时间
+func Subscribe(id string, handler func(args ...any)) (seq int) {
 	lock.Lock()
 	defer func() {
 		lock.Unlock()
@@ -29,23 +30,23 @@ func Subscribe(eventID string, handler func(args ...any)) (seq int) {
 		seq:     seq,
 		handler: handler,
 	}
-	ls, ok := listeners[eventID]
+	ls, ok := listeners[id]
 	if !ok {
 		ls = []*listener{}
 	}
-	listeners[eventID] = append(ls, ln)
+	listeners[id] = append(ls, ln)
 	return seq
 }
 
 // SyncPublish 同步触发事件，若有处理器处理失败，则返回错误
-func SyncPublish(eventID string, args ...any) (err error) {
+func SyncPublish(id string, args ...any) (err error) {
 	
 	lock.Lock()
 	defer func() {
 		lock.Unlock()
 	}()
 	
-	ls, ok := listeners[eventID]
+	ls, ok := listeners[id]
 	if !ok {
 		return
 	}
@@ -65,13 +66,13 @@ func SyncPublish(eventID string, args ...any) (err error) {
 
 // AsyncPublish 异步触发事件，忽略处理器执行的结果
 // 异步的处理器之间将会顺序同步执行
-func AsyncPublish(eventID string, args ...any) {
+func AsyncPublish(id string, args ...any) {
 	lock.Lock()
 	defer func() {
 		lock.Unlock()
 	}()
 	
-	ls, ok := listeners[eventID]
+	ls, ok := listeners[id]
 	if !ok {
 		return
 	}
@@ -90,13 +91,14 @@ func AsyncPublish(eventID string, args ...any) {
 	return
 }
 
-func Unsubscribe(eventID string, seq int) {
+// Unsubscribe 取消订阅时间
+func Unsubscribe(id string, seq int) {
 	lock.Lock()
 	defer func() {
 		lock.Unlock()
 	}()
 	
-	ls, ok := listeners[eventID]
+	ls, ok := listeners[id]
 	if !ok {
 		return
 	}
@@ -108,7 +110,7 @@ func Unsubscribe(eventID string, seq int) {
 		}
 	}
 	if index >= 0 {
-		listeners[eventID] = append(ls[:index], ls[index+1:]...)
+		listeners[id] = append(ls[:index], ls[index+1:]...)
 	}
 }
 
@@ -119,8 +121,6 @@ func catchPanic(f func()) (err any) {
 			log.Printf("[github.com/gozelle/event] CatchPanic panic: err=%v", err)
 		}
 	}()
-	
 	f()
-	
 	return
 }
