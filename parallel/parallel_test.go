@@ -39,7 +39,7 @@ func TestRunLimit(t *testing.T) {
 		})
 	}
 	n := 0
-	err := RunLimit(context.Background(), 3, func(values []any) error {
+	err := RunWithChunk(context.Background(), 3, func(values []any) error {
 		for _, v := range values {
 			n += v.(int)
 		}
@@ -83,7 +83,7 @@ func TestRunLimitError(t *testing.T) {
 		})
 	}
 	n := 0
-	err := RunLimit(context.Background(), 3, func(values []any) error {
+	err := RunWithChunk(context.Background(), 3, func(values []any) error {
 		for _, v := range values {
 			n += v.(int)
 		}

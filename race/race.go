@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-// Race
+// Run
 // 并发执行 Runner, 返回其中最快的结果
 // 如果全部返回错误，则返回出现的第一个错误
-func Race(ctx context.Context, handlers ...async.Runner) (result any, err error) {
+func Run(ctx context.Context, handlers ...async.Runner) (result any, err error) {
 	
 	if len(handlers) == 0 {
 		err = fmt.Errorf("no handlers")
@@ -60,11 +60,11 @@ func Race(ctx context.Context, handlers ...async.Runner) (result any, err error)
 	return
 }
 
-// DelayRace
+// RunWithDelay
 // 并发执行 Runner, 返回其中最快的结果
 // 如果全部返回错误，则返回出现的第一个错误
-// 与 Race 不同的是，配置延迟执行的 Runner，会在等待配置时间后，再开始执行
-func DelayRace(ctx context.Context, handlers ...*async.DelayRunner) (result any, err error) {
+// 与 Run 不同的是，配置延迟执行的 Runner，会在等待配置时间后，再开始执行
+func RunWithDelay(ctx context.Context, handlers ...*async.DelayRunner) (result any, err error) {
 	
 	if len(handlers) == 0 {
 		err = fmt.Errorf("no handlers")

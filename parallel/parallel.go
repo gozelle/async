@@ -12,7 +12,6 @@ import (
 
 // Run 并发执行 Runners
 // 效果：Runners 产生的结果将无序存放在 result 中，如果有 Runner 产生了错误，err 会存放第 1 个产生的 error
-// TODO: 加入有错误产生时，提前退出
 func Run(ctx context.Context, runners ...async.Runner) (result []any, err error) {
 	if len(runners) == 0 {
 		err = fmt.Errorf("no runners")
@@ -53,14 +52,14 @@ func Run(ctx context.Context, runners ...async.Runner) (result []any, err error)
 	return
 }
 
-// RunLimit 分片并发任务
-// 效果：将会按照 limit 定义的数值，使用回调函数对任务进行分组处理
-// 回调函数会同步运行,如果回调函数返回错误，将会终止 RunLimit 运行, 返回错误；
+// RunWithChunk 分片并发任务
+// 效果：将会按照 chunks 定义的数值，使用回调函数对任务进行分组处理
+// 回调函数会同步运行,如果回调函数返回错误，将会终止 RunWithChunk 运行, 返回错误；
 // 如果希望在分组全部运行结束后，再提交回调函数处理后的结果，请在外面做好事务控制。
-func RunLimit(ctx context.Context, limit int, callback func(values []any) error, runners ...async.Runner) (err error) {
+func RunWithChunk(ctx context.Context, chunks int, callback func(values []any) error, runners ...async.Runner) (err error) {
 	
-	if limit <= 0 {
-		err = fmt.Errorf("limit expect greater than 0")
+	if chunks <= 0 {
+		err = fmt.Errorf("chunks expect greater than 0")
 		return
 	}
 	
@@ -69,7 +68,7 @@ func RunLimit(ctx context.Context, limit int, callback func(values []any) error,
 		return
 	}
 	
-	ranges, err := chunk.Int64s(0, int64(len(runners))-1, int64(limit))
+	ranges, err := chunk.Int64s(0, int64(len(runners))-1, int64(chunks))
 	if err != nil {
 		err = fmt.Errorf("calc ranges error: %s", err)
 		return
@@ -95,8 +94,8 @@ func RunLimit(ctx context.Context, limit int, callback func(values []any) error,
 	return
 }
 
-// RunRetry 参考 Run, 带重试机制执行
-func RunRetry(ctx context.Context, times int, interval time.Duration, runners ...async.Runner) (result []any, err error) {
+// RunWithRetry 参考 Run, 带重试机制执行
+func RunWithRetry(ctx context.Context, times int, interval time.Duration, runners ...async.Runner) (result []any, err error) {
 	if len(runners) == 0 {
 		err = fmt.Errorf("no runners")
 		return
@@ -136,11 +135,11 @@ func RunRetry(ctx context.Context, times int, interval time.Duration, runners ..
 	return
 }
 
-// RunRetryLimit 参考 RunLimit，带重试机制执行
-func RunRetryLimit(ctx context.Context, limit, times int, interval time.Duration, callback func(values []any) error, runners ...async.Runner) (err error) {
+// RunWithChunkRetry 参考 RunWithChunk，带重试机制执行
+func RunWithChunkRetry(ctx context.Context, chunks, times int, interval time.Duration, callback func(values []any) error, runners ...async.Runner) (err error) {
 	
-	if limit <= 0 {
-		err = fmt.Errorf("limit expect greater than 0")
+	if chunks <= 0 {
+		err = fmt.Errorf("chunks expect greater than 0")
 		return
 	}
 	
@@ -149,7 +148,7 @@ func RunRetryLimit(ctx context.Context, limit, times int, interval time.Duration
 		return
 	}
 	
-	ranges, err := chunk.Int64s(0, int64(len(runners))-1, int64(limit))
+	ranges, err := chunk.Int64s(0, int64(len(runners))-1, int64(chunks))
 	if err != nil {
 		err = fmt.Errorf("calc ranges error: %s", err)
 		return
@@ -161,7 +160,7 @@ func RunRetryLimit(ctx context.Context, limit, times int, interval time.Duration
 			execRunners = append(execRunners, runners[int(i)])
 		}
 		var values []any
-		values, err = RunRetry(ctx, times, interval, execRunners...)
+		values, err = RunWithRetry(ctx, times, interval, execRunners...)
 		if err != nil {
 			return
 		}

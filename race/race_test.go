@@ -9,7 +9,7 @@ import (
 )
 
 func TestRace(t *testing.T) {
-	r, err := Race(context.Background(), func(ctx context.Context) (result any, err error) {
+	r, err := Run(context.Background(), func(ctx context.Context) (result any, err error) {
 		time.Sleep(500 * time.Millisecond)
 		result = 1
 		return
@@ -63,7 +63,7 @@ func TestDelayRace(t *testing.T) {
 		}(v)
 	}
 	
-	r, err := DelayRace(context.Background(), handlers2...)
+	r, err := RunWithDelay(context.Background(), handlers2...)
 	require.NoError(t, err)
 	require.Equal(t, r.(int), 1)
 }
