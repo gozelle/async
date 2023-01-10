@@ -6,6 +6,8 @@ The queue implemented here is as fast as it is for an additional reason: it is *
 */
 package queue
 
+import "sync"
+
 // minQueueLen is smallest capacity that queue may have.
 // Must be power of 2 for bitwise modulus: x % n == x & (n - 1).
 const minQueueLen = 16
@@ -14,6 +16,7 @@ const minQueueLen = 16
 type Queue struct {
 	buf               []any
 	head, tail, count int
+	lock              sync.Mutex
 }
 
 // New constructs and returns a new Queue.
@@ -25,6 +28,10 @@ func New() *Queue {
 
 // Length returns the number of elements currently stored in the queue.
 func (q *Queue) Length() int {
+	q.lock.Lock()
+	defer func() {
+		q.lock.Unlock()
+	}()
 	return q.count
 }
 
@@ -47,6 +54,11 @@ func (q *Queue) resize() {
 
 // Add puts an element on the end of the queue.
 func (q *Queue) Add(elem any) {
+	q.lock.Lock()
+	defer func() {
+		q.lock.Unlock()
+	}()
+	
 	if q.count == len(q.buf) {
 		q.resize()
 	}
@@ -57,12 +69,13 @@ func (q *Queue) Add(elem any) {
 	q.count++
 }
 
-func (q *Queue) Count() int {
-	return q.count
-}
-
 // Peek returns the element at the head of the queue.
 func (q *Queue) Peek() any {
+	q.lock.Lock()
+	defer func() {
+		q.lock.Unlock()
+	}()
+	
 	if q.count <= 0 {
 		return nil
 	}
@@ -74,6 +87,11 @@ func (q *Queue) Peek() any {
 // negative index values. Index 0 refers to the first element, and
 // index -1 refers to the last.
 func (q *Queue) Get(i int) any {
+	q.lock.Lock()
+	defer func() {
+		q.lock.Unlock()
+	}()
+	
 	// If indexing backwards, convert to positive index.
 	if i < 0 {
 		i += q.count
@@ -88,6 +106,11 @@ func (q *Queue) Get(i int) any {
 // Remove removes and returns the element from the front of the queue. If the
 // queue is empty, the call will panic.
 func (q *Queue) Remove() any {
+	q.lock.Lock()
+	defer func() {
+		q.lock.Unlock()
+	}()
+	
 	if q.count <= 0 {
 		panic("queue: Remove() called on empty queue")
 	}
