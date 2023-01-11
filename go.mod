@@ -7,7 +7,7 @@ require (
 	github.com/gozelle/go-difflib v1.0.0 // indirect
 	github.com/gozelle/go-spew v1.1.10 // indirect
 	github.com/gozelle/isatty v0.0.17 // indirect
-	github.com/gozelle/logging v0.0.0-20221215134102-09933b3f477a // indirect
+	github.com/gozelle/logging v0.0.0-20230111081457-6f16f4dd5a46 // indirect
 	github.com/gozelle/multierr v1.9.10 // indirect
 	github.com/gozelle/objx v0.5.10 // indirect
 	github.com/gozelle/testify v1.8.11 // indirect
