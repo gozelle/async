@@ -12,7 +12,7 @@ import (
 var log = logging.Logger("pipe")
 
 // Run 按管道处理任务，可提前终止
-func Run(ctx context.Context, initial any, runners ...async.NamedPipeRunner) (err error) {
+func Run(ctx context.Context, initial any, runners ...async.PipeRunner) (err error) {
 	if reflect.TypeOf(initial).Kind() != reflect.Pointer {
 		err = fmt.Errorf("initial expect a pointer")
 		return
@@ -23,7 +23,7 @@ func Run(ctx context.Context, initial any, runners ...async.NamedPipeRunner) (er
 	}
 	for _, v := range runners {
 		var exit bool
-		exit, err = v.Runner(ctx, initial)
+		exit, err = v(ctx, initial)
 		if err != nil {
 			return
 		}
