@@ -22,13 +22,9 @@ func Run(ctx context.Context, initial any, runners ...async.PipeRunner) (err err
 		return
 	}
 	for _, v := range runners {
-		var exit bool
-		exit, err = v(ctx, initial)
+		err = v(ctx, initial)
 		if err != nil {
 			return
-		}
-		if exit {
-			break
 		}
 	}
 	return
@@ -46,17 +42,13 @@ func RunWithTiming(ctx context.Context, initial any, runners ...async.NamedPipeR
 		return
 	}
 	for _, v := range runners {
-		var exit bool
 		now := time.Now()
-		exit, err = v.Runner(ctx, initial)
+		err = v.Runner(ctx, initial)
 		elapsed := time.Since(now)
 		log.Debugf("exec '%s' elapsed time: %s", v.Name, elapsed)
 		elapseds = append(elapseds, async.NamedElapsed{Name: v.Name, Elapsed: elapsed})
 		if err != nil {
 			return
-		}
-		if exit {
-			break
 		}
 	}
 	return

@@ -17,9 +17,9 @@ type NamedRunner struct {
 	Runner func(ctx context.Context) (value any, err error)
 }
 
-type PipeRunner func(ctx context.Context, initial any) (exit bool, err error)
+type PipeRunner func(ctx context.Context, initial any) (err error)
 
 type NamedPipeRunner struct {
 	Name   string
-	Runner func(ctx context.Context, initial any) (exit bool, err error)
+	Runner func(ctx context.Context, initial any) (err error)
 }
