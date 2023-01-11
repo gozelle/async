@@ -84,10 +84,12 @@ func RunWithChunk(ctx context.Context, chunks int, callback func(values []any) e
 		if err != nil {
 			return
 		}
-		err = callback(values)
-		if err != nil {
-			err = fmt.Errorf("exec callback error: %s", err)
-			return
+		if callback != nil {
+			err = callback(values)
+			if err != nil {
+				err = fmt.Errorf("exec callback error: %s", err)
+				return
+			}
 		}
 	}
 	
@@ -164,11 +166,14 @@ func RunWithChunkRetry(ctx context.Context, chunks, times int, interval time.Dur
 		if err != nil {
 			return
 		}
-		err = callback(values)
-		if err != nil {
-			err = fmt.Errorf("exec callback error: %s", err)
-			return
+		if callback != nil {
+			err = callback(values)
+			if err != nil {
+				err = fmt.Errorf("exec callback error: %s", err)
+				return
+			}
 		}
+		
 	}
 	
 	return
