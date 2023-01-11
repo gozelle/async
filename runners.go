@@ -14,5 +14,12 @@ type DelayRunner struct {
 
 type NamedRunner struct {
 	Name   string
-	Runner func(ctx context.Context, initial any) (value any, exit bool, err error)
+	Runner func(ctx context.Context) (value any, err error)
+}
+
+type PipeRunner func(ctx context.Context, initial any) (exit bool, err error)
+
+type NamedPipeRunner struct {
+	Name   string
+	Runner func(ctx context.Context, initial any) (exit bool, err error)
 }

@@ -1,6 +1,9 @@
 package queue
 
-import "testing"
+import (
+	"github.com/gozelle/testify/require"
+	"testing"
+)
 
 func TestQueueSimple(t *testing.T) {
 	q := New()
@@ -104,16 +107,18 @@ func TestQueueGetOutOfRangePanics(t *testing.T) {
 func TestQueuePeekOutOfRangePanics(t *testing.T) {
 	q := New()
 	
-	assertPanics(t, "should panic when peeking empty queue", func() {
-		q.Peek()
-	})
+	//assertPanics(t, "should panic when peeking empty queue", func() {
+	//	q.Peek()
+	//})
+	require.Equal(t, nil, q.Peek())
 	
 	q.Add(1)
 	q.Remove()
 	
-	assertPanics(t, "should panic when peeking emptied queue", func() {
-		q.Peek()
-	})
+	//assertPanics(t, "should panic when peeking emptied queue", func() {
+	//	q.Peek()
+	//})
+	require.Equal(t, nil, q.Peek())
 }
 
 func TestQueueRemoveOutOfRangePanics(t *testing.T) {

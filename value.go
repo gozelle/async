@@ -53,7 +53,7 @@ func (r *Values) GetValues() []any {
 	return values
 }
 
-type NamedInterval struct {
-	Name     string
-	Interval time.Duration
+type NamedElapsed struct {
+	Name    string
+	Elapsed time.Duration
 }
