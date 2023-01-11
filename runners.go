@@ -5,6 +5,22 @@ import (
 	"time"
 )
 
+type IRunner interface {
+	Runner() Runner
+}
+
+type IDelayRunner interface {
+	DelayRunner() DelayRunner
+}
+
+type IPipeRunner interface {
+	PipeRunner() PipeRunner
+}
+
+type INamedPipeRunner interface {
+	NamedPipeRunner() NamedPipeRunner
+}
+
 type Runner func(ctx context.Context) (result any, err error)
 
 type DelayRunner struct {
