@@ -16,7 +16,9 @@ func Run(ctx context.Context, times int, interval time.Duration, runner async.Ru
 		result, err = runner(ctx)
 		if err == nil {
 			return
-		} else if interval > 0 {
+		}
+		
+		if interval > 0 {
 			time.Sleep(interval)
 		}
 	}
