@@ -12,6 +12,8 @@ github.com/gozelle/logging v0.0.0-20230111081457-6f16f4dd5a46 h1:hV0LqMjLl6oDbp4
 github.com/gozelle/logging v0.0.0-20230111081457-6f16f4dd5a46/go.mod h1:uYLWg4Ida/VxwbumW4/N6HPAj/3ShN+2x2Kj2hAtD8U=
 github.com/gozelle/multierr v1.9.10 h1:EUU22u5Yx82/mQm55fH1WF6ztp0w4U+cZl9lCzuyUvE=
 github.com/gozelle/multierr v1.9.10/go.mod h1:4tC7qdet8CoxU9Q/Ha2bn5obpheqU7bTB9AENXwWzaI=
+github.com/gozelle/multierror v1.1.1 h1:melqp8EeukL6chaEBbxu9EOiMRQIjqETkNx0fDSgDqQ=
+github.com/gozelle/multierror v1.1.1/go.mod h1:mtEfirV1E5kamBQeek5fNIAjJVHyMhWyNvdZSieeUSY=
 github.com/gozelle/objx v0.5.10 h1:lbYJdhSwnljJNpyRRbbqJt+uF3z66om0RsiR175sHAk=
 github.com/gozelle/objx v0.5.10/go.mod h1:3muRr1Da1mCg3D+wYBicuZaHtGbvfLCgewfYJoz7cbs=
 github.com/gozelle/testify v1.8.11 h1:HDi4d07tDlTLfAc1ie9yR/ZBr3r4HR9866GA5uHSwdA=
@@ -20,5 +22,7 @@ github.com/gozelle/yaml v0.0.0-20221214152138-81b78a92d903 h1:Z5bL8fjqThaLRa3MdQ
 github.com/gozelle/yaml v0.0.0-20221214152138-81b78a92d903/go.mod h1:0Pp3KXweJJtxd5jzd6y3qW2DpjEFAlYc7oRDtuhMFjg=
 github.com/gozelle/zap v1.24.0 h1:UDH3SPadOSIf4PrAFVauvbzK8uwxS+HXAEQpxrtlhdA=
 github.com/gozelle/zap v1.24.0/go.mod h1:ou7R5ioHa0+Mr3Hw98o5Sa1tMYU5DEcX2LeYtrAikg0=
+github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
+github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab h1:2QkjZIsXupsJbJIdSjjUOgWK3aEtzyuh2mPt3l/CkeU=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
