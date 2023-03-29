@@ -43,7 +43,7 @@ func run() (err error) {
 
 ## race 竞赛调用
 
-特性：取最先成功的结果返回，取消或忽略后续排队的任务执行。
+特性：取最先成功的结果返回，取消或忽略后续排队的任务执行，如果全部任务都失败，则返回合并的错误。
 
 ```go
 func main(){
@@ -71,6 +71,7 @@ func main(){
 		},
 	}
 	
+	// 将会返回执行最快的结果
 	r, err := race.Run(context.Background(), runners)
 	if err != nil{
 	    return 	
