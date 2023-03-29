@@ -2,28 +2,13 @@ package race
 
 import (
 	"context"
-	"github.com/gozelle/async"
 	"github.com/gozelle/testify/require"
 	"testing"
 	"time"
 )
 
-func TestRace(t *testing.T) {
-	r, err := Run(context.Background(), func(ctx context.Context) (result any, err error) {
-		time.Sleep(500 * time.Millisecond)
-		result = 1
-		return
-	}, func(ctx context.Context) (result any, err error) {
-		time.Sleep(2000 * time.Millisecond)
-		result = 2
-		return
-	})
-	require.NoError(t, err)
-	require.Equal(t, r.(int), 1)
-}
-
 func TestDelayRace(t *testing.T) {
-	handlers := []*async.DelayRunner{
+	handlers := []*Runner{
 		{
 			Delay: 0,
 			Runner: func(ctx context.Context) (result any, err error) {
@@ -47,13 +32,13 @@ func TestDelayRace(t *testing.T) {
 		},
 	}
 	
-	var handlers2 []*async.DelayRunner
+	var handlers2 []*Runner
 	for _, h := range handlers {
 		v := h
-		func(v *async.DelayRunner) {
+		func(v *Runner) {
 			handlers2 = append(
 				handlers2,
-				&async.DelayRunner{
+				&Runner{
 					Delay: v.Delay,
 					Runner: func(ctx context.Context) (result any, err error) {
 						return v.Runner(ctx)
@@ -63,7 +48,7 @@ func TestDelayRace(t *testing.T) {
 		}(v)
 	}
 	
-	r, err := RunWithDelay(context.Background(), handlers2...)
+	r, err := Run(context.Background(), handlers2)
 	require.NoError(t, err)
 	require.Equal(t, r.(int), 1)
 }
