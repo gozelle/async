@@ -60,7 +60,7 @@ func TestRunError(t *testing.T) {
 func TestRun2(t *testing.T) {
 	var runners []parallel.Runner
 	
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 100000; i++ {
 		v := i
 		runners = append(runners, func(ctx context.Context) (result any, err error) {
 			result = v
@@ -80,7 +80,7 @@ func TestRun2(t *testing.T) {
 			t.Logf("未知类型: %v", r)
 		}
 	}
-	require.Equal(t, n, 10000)
+	require.Equal(t, n, 100000)
 }
 
 func TestChan(t *testing.T) {
