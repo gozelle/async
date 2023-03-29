@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/gozelle/async"
+	"github.com/gozelle/multierr"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -34,41 +36,63 @@ func Run(ctx context.Context, runners []*Runner) (result any, err error) {
 	}()
 	
 	vr := async.NewValue()
-	ve := async.NewValue()
+	ve := async.NewValues()
 	
 	wg := sync.WaitGroup{}
-	wg.Add(len(runners))
 	
 	for _, f := range runners {
+		wg.Add(1)
 		go func(f *Runner) {
+			
+			done := atomic.Value{}
 			go func() {
 				select {
 				case <-cctx.Done():
-					wg.Done()
+					
+					if done.Load() == nil {
+						wg.Done()
+						done.Store(true)
+					}
 				}
 			}()
-			time.Sleep(f.Delay)
-			if ctx.Err() != nil {
+			
+			defer func() {
+				if done.Load() == nil {
+					wg.Done()
+					done.Store(true)
+				}
+			}()
+			
+			if cctx.Err() != nil {
 				return
 			}
+			if f.Delay > 0 {
+				time.Sleep(f.Delay)
+			}
+			
 			r, e := f.Runner(cctx)
 			if e != nil {
-				if ve.GetValue() == nil {
-					ve.SetValue(err)
-				}
+				ve.AddValue(e)
 				return
 			}
-			if vr.GetValue() == nil {
-				vr.SetValue(r)
-			}
+			vr.SetValue(r)
 			cancel()
+			
+			return
 		}(f)
 	}
 	wg.Wait()
 	
 	result = vr.GetValue()
-	if e := ve.GetValue(); e != nil {
-		err = e.(error)
+	
+	if !ve.Empty() {
+		list := ve.GetValues()
+		errors := make([]error, len(list))
+		for _, e := range list {
+			errors = append(errors, e.(error))
+		}
+		err = multierr.Combine(errors...)
+		return
 	}
 	
 	return

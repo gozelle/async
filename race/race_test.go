@@ -1,18 +1,54 @@
-package race
+package race_test
 
 import (
 	"context"
+	"fmt"
+	"github.com/gozelle/async/race"
 	"github.com/gozelle/testify/require"
 	"testing"
 	"time"
 )
 
 func TestDelayRace(t *testing.T) {
-	handlers := []*Runner{
+	runners := []*race.Runner{
 		{
 			Delay: 0,
 			Runner: func(ctx context.Context) (result any, err error) {
 				result = 1
+				t.Log(result)
+				return
+			},
+		},
+		{
+			Delay: 2 * time.Second,
+			Runner: func(ctx context.Context) (result any, err error) {
+				result = 2
+				t.Log(result)
+				return
+			},
+		},
+		{
+			Delay: 3 * time.Second,
+			Runner: func(ctx context.Context) (result any, err error) {
+				result = 3
+				t.Log(result)
+				return
+			},
+		},
+	}
+	
+	r, err := race.Run(context.Background(), runners)
+	require.NoError(t, err)
+	require.Equal(t, 1, r.(int))
+}
+
+func TestRaceError(t *testing.T) {
+	runners := []*race.Runner{
+		{
+			Delay: 0,
+			Runner: func(ctx context.Context) (result any, err error) {
+				result = 1
+				err = fmt.Errorf("some error form: 1")
 				return
 			},
 		},
@@ -20,6 +56,7 @@ func TestDelayRace(t *testing.T) {
 			Delay: 2 * time.Second,
 			Runner: func(ctx context.Context) (result any, err error) {
 				result = 3
+				err = fmt.Errorf("some error form: 3")
 				return
 			},
 		},
@@ -27,28 +64,13 @@ func TestDelayRace(t *testing.T) {
 			Delay: 3 * time.Second,
 			Runner: func(ctx context.Context) (result any, err error) {
 				result = 2
+				err = fmt.Errorf("some error form: 2")
 				return
 			},
 		},
 	}
 	
-	var handlers2 []*Runner
-	for _, h := range handlers {
-		v := h
-		func(v *Runner) {
-			handlers2 = append(
-				handlers2,
-				&Runner{
-					Delay: v.Delay,
-					Runner: func(ctx context.Context) (result any, err error) {
-						return v.Runner(ctx)
-					},
-				},
-			)
-		}(v)
-	}
-	
-	r, err := Run(context.Background(), handlers2)
-	require.NoError(t, err)
-	require.Equal(t, r.(int), 1)
+	_, err := race.Run(context.Background(), runners)
+	require.Error(t, err)
+	t.Log(err)
 }

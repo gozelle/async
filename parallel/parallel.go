@@ -42,7 +42,7 @@ func Run(ctx context.Context, limit uint, runners []Runner) <-chan any {
 			case <-cctx.Done():
 				return
 			default:
-				result, err := runner(ctx)
+				result, err := runner(cctx)
 				if err != nil {
 					results <- err
 					cancel()

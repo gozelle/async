@@ -1,9 +1,10 @@
-package parallel
+package parallel_test
 
 import (
 	"context"
 	"fmt"
 	"github.com/gozelle/async"
+	"github.com/gozelle/async/parallel"
 	"github.com/gozelle/testify/require"
 	"sync"
 	"testing"
@@ -21,7 +22,7 @@ func TestRun(t *testing.T) {
 		})
 	}
 	
-	values := Run(context.Background(), 2, runners)
+	values := parallel.Run(context.Background(), 2, runners)
 	n := 0
 	for v := range values {
 		n += v.(int)
@@ -45,7 +46,7 @@ func TestRunError(t *testing.T) {
 		})
 	}
 	
-	values := Run(context.Background(), 2, runners)
+	values := parallel.Run(context.Background(), 2, runners)
 	var err error
 	for v := range values {
 		switch vv := v.(type) {
@@ -57,7 +58,7 @@ func TestRunError(t *testing.T) {
 }
 
 func TestRun2(t *testing.T) {
-	var runners []Runner
+	var runners []parallel.Runner
 	
 	for i := 0; i < 10000; i++ {
 		v := i
@@ -66,7 +67,7 @@ func TestRun2(t *testing.T) {
 			return
 		})
 	}
-	results := Run(context.Background(), 100, runners)
+	results := parallel.Run(context.Background(), 100, runners)
 	n := 0
 	for v := range results {
 		n++
@@ -163,4 +164,42 @@ func TestChCloseSignal(t *testing.T) {
 	}()
 	t.Log(<-c)
 	t.Log("即将退出")
+}
+
+func TestParallel(t *testing.T) {
+	_ = run()
+}
+
+func run() (err error) {
+	
+	// 生成 runner
+	runner := func(index int) parallel.Runner {
+		return func(ctx context.Context) (result any, err error) {
+			return index, nil
+		}
+	}
+	
+	var runners []parallel.Runner
+	for i := 0; i < 10000; i++ {
+		runners = append(runners, runner(i))
+	}
+	
+	// 同时最多有 10 个并发
+	results := parallel.Run(context.Background(), 10, runners)
+	
+	// 固定写法，用于从通道中接收处理结果
+	for v := range results {
+		switch r := v.(type) {
+		case int:
+			// 结果处理
+		case error:
+			err = r
+			return
+		default:
+			err = fmt.Errorf("unknown result type: %v", v)
+			return
+		}
+	}
+	
+	return
 }

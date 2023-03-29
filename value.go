@@ -32,25 +32,33 @@ func NewValues() *Values {
 }
 
 type Values struct {
-	lock   sync.RWMutex
+	lock   sync.Mutex
 	values []any
 }
 
 func (r *Values) AddValue(val any) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
+	
 	r.values = append(r.values, val)
 }
 
 func (r *Values) GetValues() []any {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	
 	var values []any
 	for _, v := range r.values {
 		values = append(values, v)
 	}
 	return values
+}
+
+func (r *Values) Empty() bool {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	
+	return len(r.values) == 0
 }
 
 type NamedElapsed struct {
