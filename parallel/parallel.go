@@ -56,6 +56,7 @@ func Run(ctx context.Context, limit uint, runners []Runner) <-chan any {
 	go func() {
 		wg.Wait()
 		close(results)
+		close(sem)
 		cancel()
 	}()
 	
