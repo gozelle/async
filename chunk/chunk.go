@@ -2,8 +2,20 @@ package chunk
 
 import (
 	"fmt"
-	"github.com/gozelle/async"
 )
+
+// Int64Range 记录 Int64 区间
+type Int64Range struct {
+	Begin int64
+	End   int64
+}
+
+// Len 返回 Range 的有效长度
+// Begin=0, End=0  则： Len = 1
+// Begin=1, End=2  则:  Len = 2
+func (i Int64Range) Len() int64 {
+	return i.End - i.Begin + 1
+}
 
 // SplitInt64s 将 [a,b] 范围按指定步长分段
 // 示例：[0 9 3] => [{0 2} {3 5} {6 8} {9 9}]
@@ -16,7 +28,7 @@ import (
 //          // ..
 //      }
 // }
-func SplitInt64s(a, b, step int64) (ranges []async.Int64Range, err error) {
+func SplitInt64s(a, b, step int64) (ranges []Int64Range, err error) {
 	if step <= 0 {
 		err = fmt.Errorf("expect step > 0,got: step=%d", step)
 		return
@@ -28,7 +40,7 @@ func SplitInt64s(a, b, step int64) (ranges []async.Int64Range, err error) {
 	}
 	
 	if a == b {
-		ranges = append(ranges, async.Int64Range{Begin: a, End: b})
+		ranges = append(ranges, Int64Range{Begin: a, End: b})
 		return
 	}
 	
@@ -38,9 +50,9 @@ func SplitInt64s(a, b, step int64) (ranges []async.Int64Range, err error) {
 		aa := a + i*step + 1
 		bb := a + (i+1)*step
 		if bb < b && aa < b {
-			ranges = append(ranges, async.Int64Range{Begin: aa, End: bb})
+			ranges = append(ranges, Int64Range{Begin: aa, End: bb})
 		} else {
-			ranges = append(ranges, async.Int64Range{Begin: aa, End: b})
+			ranges = append(ranges, Int64Range{Begin: aa, End: b})
 			if bb >= b {
 				break
 			}

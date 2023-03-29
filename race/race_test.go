@@ -1,33 +1,54 @@
-package race
+package race_test
 
 import (
 	"context"
-	"github.com/gozelle/async"
+	"fmt"
+	"github.com/gozelle/async/race"
 	"github.com/gozelle/testify/require"
 	"testing"
 	"time"
 )
 
-func TestRace(t *testing.T) {
-	r, err := Run(context.Background(), func(ctx context.Context) (result any, err error) {
-		time.Sleep(500 * time.Millisecond)
-		result = 1
-		return
-	}, func(ctx context.Context) (result any, err error) {
-		time.Sleep(2000 * time.Millisecond)
-		result = 2
-		return
-	})
-	require.NoError(t, err)
-	require.Equal(t, r.(int), 1)
-}
-
 func TestDelayRace(t *testing.T) {
-	handlers := []*async.DelayRunner{
+	runners := []*race.Runner{
 		{
 			Delay: 0,
 			Runner: func(ctx context.Context) (result any, err error) {
 				result = 1
+				t.Log(result)
+				return
+			},
+		},
+		{
+			Delay: 2 * time.Second,
+			Runner: func(ctx context.Context) (result any, err error) {
+				result = 2
+				t.Log(result)
+				return
+			},
+		},
+		{
+			Delay: 3 * time.Second,
+			Runner: func(ctx context.Context) (result any, err error) {
+				result = 3
+				t.Log(result)
+				return
+			},
+		},
+	}
+	
+	r, err := race.Run(context.Background(), runners)
+	require.NoError(t, err)
+	require.Equal(t, 1, r.(int))
+}
+
+func TestRaceError(t *testing.T) {
+	runners := []*race.Runner{
+		{
+			Delay: 0,
+			Runner: func(ctx context.Context) (result any, err error) {
+				result = 1
+				err = fmt.Errorf("some error form: 1")
 				return
 			},
 		},
@@ -35,6 +56,7 @@ func TestDelayRace(t *testing.T) {
 			Delay: 2 * time.Second,
 			Runner: func(ctx context.Context) (result any, err error) {
 				result = 3
+				err = fmt.Errorf("some error form: 3")
 				return
 			},
 		},
@@ -42,28 +64,13 @@ func TestDelayRace(t *testing.T) {
 			Delay: 3 * time.Second,
 			Runner: func(ctx context.Context) (result any, err error) {
 				result = 2
+				err = fmt.Errorf("some error form: 2")
 				return
 			},
 		},
 	}
 	
-	var handlers2 []*async.DelayRunner
-	for _, h := range handlers {
-		v := h
-		func(v *async.DelayRunner) {
-			handlers2 = append(
-				handlers2,
-				&async.DelayRunner{
-					Delay: v.Delay,
-					Runner: func(ctx context.Context) (result any, err error) {
-						return v.Runner(ctx)
-					},
-				},
-			)
-		}(v)
-	}
-	
-	r, err := RunWithDelay(context.Background(), handlers2...)
-	require.NoError(t, err)
-	require.Equal(t, r.(int), 1)
+	_, err := race.Run(context.Background(), runners)
+	require.Error(t, err)
+	t.Log(err)
 }

@@ -7,7 +7,13 @@ import (
 	"time"
 )
 
-func Run(ctx context.Context, times int, interval time.Duration, runner async.Runner) (result any, err error) {
+type IRunner interface {
+	Runner() Runner
+}
+
+type Runner = async.Runner
+
+func Run(ctx context.Context, times int, interval time.Duration, runner Runner) (result any, err error) {
 	if times < 1 {
 		err = fmt.Errorf("times expact > 1, got: %d", times)
 		return
@@ -22,6 +28,5 @@ func Run(ctx context.Context, times int, interval time.Duration, runner async.Ru
 			time.Sleep(interval)
 		}
 	}
-	
 	return
 }
