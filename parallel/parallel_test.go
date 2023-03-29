@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestRun(t *testing.T) {
+func TestRun1(t *testing.T) {
 	
 	var runners []async.Runner
 	
@@ -73,9 +73,9 @@ func TestRun2(t *testing.T) {
 		n++
 		switch r := v.(type) {
 		case error:
-			t.Log(r)
+			t.Error(r)
 		case int:
-			t.Logf("结果: %d", r)
+			//t.Logf("结果: %d", r)
 		default:
 			t.Logf("未知类型: %v", r)
 		}
