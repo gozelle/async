@@ -9,13 +9,13 @@
 func run() (err error) {
 	
 	// 生成 runner
-	runner := func(index int) parallel.Runner {
-		return func(ctx context.Context) (result any, err error) {
+	runner := func(index int) parallel.Runner[int] {
+		return func(ctx context.Context) (result int, err error) {
 			return index, nil
 		}
 	}
 	
-	var runners []parallel.Runner
+	var runners []parallel.Runner[int]
 	for i := 0; i < 10000; i++ {
 		runners = append(runners, runner(i))
 	}
@@ -43,34 +43,30 @@ func run() (err error) {
 
 ```go
 func main() {
-	runners := []*race.Runner{
+	runners := []*race.Runner[int]{
 		{
 			Delay: 0,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 1
 				return
 			},
 		},
 		{
 			Delay: 2 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 3
 				return
 			},
 		},
 		{
 			Delay: 3 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 2
 				return
 			},
 		},
 	}
 	
-	// 将会返回执行最快的结果
-	r, err := race.Run[int](context.Background(), runners)
-	if err != nil {
-		return
-	}
+	race.Run[int](context.Background(), runners)
 }   
 ```

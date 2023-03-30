@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-type IRunner interface {
-	Runner() Runner
+type IRunner[T any] interface {
+	Runner() Runner[T]
 }
 
-type Runner func(ctx context.Context) (result any, err error)
+type Runner[T any] func(ctx context.Context) (result T, err error)

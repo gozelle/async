@@ -10,20 +10,20 @@ import (
 	"time"
 )
 
-type IRunner interface {
-	Runner() Runner
+type IRunner[T any] interface {
+	Runner() Runner[T]
 }
 
-type Runner struct {
+type Runner[T any] struct {
 	Delay  time.Duration
-	Runner async.Runner
+	Runner async.Runner[T]
 }
 
 // Run
 // 并发执行 Runner, 返回其中最快的结果
 // 如果全部返回错误，则返回出现的第一个错误
 // 配置延迟执行的 Runner，会在等待配置时间后，再开始执行
-func Run[T any](ctx context.Context, runners []*Runner) (result T, err error) {
+func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error) {
 	
 	if len(runners) == 0 {
 		err = fmt.Errorf("no runners")
@@ -35,14 +35,14 @@ func Run[T any](ctx context.Context, runners []*Runner) (result T, err error) {
 		cancel()
 	}()
 	
-	vr := async.NewValue()
-	ve := async.NewValues()
+	vr := async.NewValue[T]()
+	ve := async.NewValues[error]()
 	
 	wg := sync.WaitGroup{}
 	
 	for _, f := range runners {
 		wg.Add(1)
-		go func(f *Runner) {
+		go func(f *Runner[T]) {
 			
 			done := atomic.Value{}
 			go func() {
@@ -84,21 +84,11 @@ func Run[T any](ctx context.Context, runners []*Runner) (result T, err error) {
 	wg.Wait()
 	
 	if !ve.Empty() {
-		list := ve.GetValues()
-		errors := make([]error, len(list))
-		for _, e := range list {
-			errors = append(errors, e.(error))
-		}
-		err = multierr.Combine(errors...)
+		err = multierr.Combine(ve.GetValues()...)
 		return
 	}
 	
-	vv, ok := vr.GetValue().(T)
-	if !ok {
-		err = fmt.Errorf("can't assert value: %v to type: T", vr.GetValue())
-		return
-	}
-	result = vv
+	result = vr.GetValue()
 	
 	return
 }

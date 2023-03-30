@@ -10,10 +10,10 @@ import (
 )
 
 func TestDelayRace(t *testing.T) {
-	runners := []*race.Runner{
+	runners := []*race.Runner[int]{
 		{
 			Delay: 0,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 1
 				t.Log(result)
 				return
@@ -21,7 +21,7 @@ func TestDelayRace(t *testing.T) {
 		},
 		{
 			Delay: 2 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 2
 				t.Log(result)
 				return
@@ -29,7 +29,7 @@ func TestDelayRace(t *testing.T) {
 		},
 		{
 			Delay: 3 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 3
 				t.Log(result)
 				return
@@ -43,10 +43,10 @@ func TestDelayRace(t *testing.T) {
 }
 
 func TestRaceError(t *testing.T) {
-	runners := []*race.Runner{
+	runners := []*race.Runner[int]{
 		{
 			Delay: 0,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 1
 				err = fmt.Errorf("some error form: 1")
 				return
@@ -54,7 +54,7 @@ func TestRaceError(t *testing.T) {
 		},
 		{
 			Delay: 2 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 3
 				err = fmt.Errorf("some error form: 3")
 				return
@@ -62,7 +62,7 @@ func TestRaceError(t *testing.T) {
 		},
 		{
 			Delay: 3 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 2
 				err = fmt.Errorf("some error form: 2")
 				return

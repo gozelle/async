@@ -3,6 +3,7 @@ package parallel
 import (
 	"context"
 	"fmt"
+	"github.com/gozelle/async"
 	"sync"
 )
 
@@ -11,7 +12,9 @@ type Result[T any] struct {
 	Value T
 }
 
-func Run[T any](ctx context.Context, limit uint, runners []func(ctx context.Context) (result T, err error)) <-chan *Result[T] {
+type Runner[T any]   async.Runner[T]
+
+func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Result[T] {
 	
 	results := make(chan *Result[T], len(runners))
 	
@@ -31,7 +34,7 @@ func Run[T any](ctx context.Context, limit uint, runners []func(ctx context.Cont
 	for _, v := range runners {
 		wg.Add(1)
 		sem <- struct{}{}
-		go func(runner func(ctx context.Context) (result T, err error)) {
+		go func(runner Runner[T]) {
 			defer func() {
 				<-sem
 				wg.Done()
