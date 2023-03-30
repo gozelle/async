@@ -21,19 +21,15 @@ func run() (err error) {
 	}
 	
 	// 同时最多有 10 个并发
-	results := parallel.Run(context.Background(), 10, runners)
+	results := parallel.Run[int](context.Background(), 10, runners)
 	
 	// 固定写法，用于从通道中接收处理结果
 	for v := range results {
-		switch r := v.(type) {
-		case int:
-			// 结果处理
-		case error:
-			err = r
-			return
-		default:
-			err = fmt.Errorf("unknown result type: %v", v)
-			return
+		if v.Error != nil {
+			// 错误处理
+		} else {
+			// 处理数据
+			_ = v.Value
 		}
 	}
 	
@@ -72,7 +68,7 @@ func main() {
 	}
 	
 	// 将会返回执行最快的结果
-	r, err := race.Run(context.Background(), runners)
+	r, err := race.Run[int](context.Background(), runners)
 	if err != nil {
 		return
 	}

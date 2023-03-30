@@ -23,7 +23,7 @@ type Runner struct {
 // 并发执行 Runner, 返回其中最快的结果
 // 如果全部返回错误，则返回出现的第一个错误
 // 配置延迟执行的 Runner，会在等待配置时间后，再开始执行
-func Run(ctx context.Context, runners []*Runner) (result any, err error) {
+func Run[T any](ctx context.Context, runners []*Runner) (result T, err error) {
 	
 	if len(runners) == 0 {
 		err = fmt.Errorf("no runners")
@@ -83,8 +83,6 @@ func Run(ctx context.Context, runners []*Runner) (result any, err error) {
 	}
 	wg.Wait()
 	
-	result = vr.GetValue()
-	
 	if !ve.Empty() {
 		list := ve.GetValues()
 		errors := make([]error, len(list))
@@ -94,6 +92,13 @@ func Run(ctx context.Context, runners []*Runner) (result any, err error) {
 		err = multierr.Combine(errors...)
 		return
 	}
+	
+	vv, ok := vr.GetValue().(T)
+	if !ok {
+		err = fmt.Errorf("can't assert value: %v to type: T", vr.GetValue())
+		return
+	}
+	result = vv
 	
 	return
 }

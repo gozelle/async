@@ -3,23 +3,21 @@ package parallel
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/async"
 	"sync"
 )
 
-type IRunner interface {
-	Runner() Runner
+type Result[T any] struct {
+	Error error
+	Value T
 }
 
-type Runner = async.Runner
-
-func Run(ctx context.Context, limit uint, runners []Runner) <-chan any {
+func Run[T any](ctx context.Context, limit uint, runners []func(ctx context.Context) (result T, err error)) <-chan *Result[T] {
 	
-	results := make(chan any, len(runners))
+	results := make(chan *Result[T], len(runners))
 	
 	if limit == 0 {
 		defer func() {
-			results <- fmt.Errorf("limit expect great than 0")
+			results <- &Result[T]{Error: fmt.Errorf("limit expect great than 0")}
 			close(results)
 		}()
 		return results
@@ -33,7 +31,7 @@ func Run(ctx context.Context, limit uint, runners []Runner) <-chan any {
 	for _, v := range runners {
 		wg.Add(1)
 		sem <- struct{}{}
-		go func(runner Runner) {
+		go func(runner func(ctx context.Context) (result T, err error)) {
 			defer func() {
 				<-sem
 				wg.Done()
@@ -42,12 +40,12 @@ func Run(ctx context.Context, limit uint, runners []Runner) <-chan any {
 			case <-cctx.Done():
 				return
 			default:
-				result, err := runner(cctx)
+				r, err := runner(cctx)
 				if err != nil {
-					results <- err
+					results <- &Result[T]{Error: err}
 					cancel()
 				} else {
-					results <- result
+					results <- &Result[T]{Value: r}
 				}
 			}
 		}(v)

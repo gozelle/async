@@ -37,9 +37,9 @@ func TestDelayRace(t *testing.T) {
 		},
 	}
 	
-	r, err := race.Run(context.Background(), runners)
+	r, err := race.Run[int](context.Background(), runners)
 	require.NoError(t, err)
-	require.Equal(t, 1, r.(int))
+	require.Equal(t, 1, r)
 }
 
 func TestRaceError(t *testing.T) {
@@ -70,7 +70,7 @@ func TestRaceError(t *testing.T) {
 		},
 	}
 	
-	_, err := race.Run(context.Background(), runners)
+	_, err := race.Run[int](context.Background(), runners)
 	require.Error(t, err)
 	t.Log(err)
 }
