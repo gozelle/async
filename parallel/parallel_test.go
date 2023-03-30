@@ -3,7 +3,6 @@ package parallel_test
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/async"
 	"github.com/gozelle/async/parallel"
 	"github.com/gozelle/testify/require"
 	"sync"
@@ -12,31 +11,32 @@ import (
 
 func TestRun1(t *testing.T) {
 	
-	var runners []async.Runner
+	var runners []parallel.Runner[int]
 	
 	for i := 1; i <= 10; i++ {
 		v := i
-		runners = append(runners, func(ctx context.Context) (result any, err error) {
+		runners = append(runners, func(ctx context.Context) (result int, err error) {
 			result = v
 			return
 		})
 	}
 	
-	values := parallel.Run(context.Background(), 2, runners)
+	values := parallel.Run[int](context.Background(), 2, runners)
 	n := 0
 	for v := range values {
-		n += v.(int)
+		n += v.Value
+		require.NoError(t, v.Error)
 	}
 	require.Equal(t, 55, n)
 }
 
 func TestRunError(t *testing.T) {
 	
-	var runners []async.Runner
+	var runners []parallel.Runner[int]
 	
 	for i := 1; i <= 5; i++ {
 		v := i
-		runners = append(runners, func(ctx context.Context) (result any, err error) {
+		runners = append(runners, func(ctx context.Context) (result int, err error) {
 			if v == 3 {
 				err = fmt.Errorf("some error")
 				return
@@ -46,39 +46,32 @@ func TestRunError(t *testing.T) {
 		})
 	}
 	
-	values := parallel.Run(context.Background(), 2, runners)
+	values := parallel.Run[int](context.Background(), 2, runners)
 	var err error
 	for v := range values {
-		switch vv := v.(type) {
-		case error:
-			err = vv
+		if v.Error != nil {
+			err = v.Error
+			break
 		}
 	}
 	require.Error(t, err)
 }
 
 func TestRun2(t *testing.T) {
-	var runners []parallel.Runner
+	var runners []parallel.Runner[int]
 	
 	for i := 0; i < 100000; i++ {
 		v := i
-		runners = append(runners, func(ctx context.Context) (result any, err error) {
+		runners = append(runners, func(ctx context.Context) (result int, err error) {
 			result = v
 			return
 		})
 	}
-	results := parallel.Run(context.Background(), 100, runners)
+	results := parallel.Run[int](context.Background(), 100, runners)
 	n := 0
 	for v := range results {
 		n++
-		switch r := v.(type) {
-		case error:
-			t.Error(r)
-		case int:
-			//t.Logf("结果: %d", r)
-		default:
-			t.Logf("未知类型: %v", r)
-		}
+		require.NoError(t, v.Error)
 	}
 	require.Equal(t, n, 100000)
 }
@@ -173,31 +166,27 @@ func TestParallel(t *testing.T) {
 func run() (err error) {
 	
 	// 生成 runner
-	runner := func(index int) parallel.Runner {
-		return func(ctx context.Context) (result any, err error) {
+	runner := func(index int) parallel.Runner[int] {
+		return func(ctx context.Context) (result int, err error) {
 			return index, nil
 		}
 	}
 	
-	var runners []parallel.Runner
+	var runners []parallel.Runner[int]
 	for i := 0; i < 10000; i++ {
 		runners = append(runners, runner(i))
 	}
 	
 	// 同时最多有 10 个并发
-	results := parallel.Run(context.Background(), 10, runners)
+	results := parallel.Run[int](context.Background(), 10, runners)
 	
 	// 固定写法，用于从通道中接收处理结果
 	for v := range results {
-		switch r := v.(type) {
-		case int:
-			// 结果处理
-		case error:
-			err = r
-			return
-		default:
-			err = fmt.Errorf("unknown result type: %v", v)
-			return
+		if v.Error != nil {
+			// 错误处理
+		} else {
+			// 处理数据
+			_ = v.Value
 		}
 	}
 	

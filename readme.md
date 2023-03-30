@@ -9,31 +9,27 @@
 func run() (err error) {
 	
 	// 生成 runner
-	runner := func(index int) parallel.Runner {
-		return func(ctx context.Context) (result any, err error) {
+	runner := func(index int) parallel.Runner[int] {
+		return func(ctx context.Context) (result int, err error) {
 			return index, nil
 		}
 	}
 	
-	var runners []parallel.Runner
+	var runners []parallel.Runner[int]
 	for i := 0; i < 10000; i++ {
 		runners = append(runners, runner(i))
 	}
 	
 	// 同时最多有 10 个并发
-	results := parallel.Run(context.Background(), 10, runners)
+	results := parallel.Run[int](context.Background(), 10, runners)
 	
 	// 固定写法，用于从通道中接收处理结果
 	for v := range results {
-		switch r := v.(type) {
-		case int:
-			// 结果处理
-		case error:
-			err = r
-			return
-		default:
-			err = fmt.Errorf("unknown result type: %v", v)
-			return
+		if v.Error != nil {
+			// 错误处理
+		} else {
+			// 处理数据
+			_ = v.Value
 		}
 	}
 	
@@ -47,34 +43,30 @@ func run() (err error) {
 
 ```go
 func main() {
-	runners := []*race.Runner{
+	runners := []*race.Runner[int]{
 		{
 			Delay: 0,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 1
 				return
 			},
 		},
 		{
 			Delay: 2 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 3
 				return
 			},
 		},
 		{
 			Delay: 3 * time.Second,
-			Runner: func(ctx context.Context) (result any, err error) {
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 2
 				return
 			},
 		},
 	}
 	
-	// 将会返回执行最快的结果
-	r, err := race.Run(context.Background(), runners)
-	if err != nil {
-		return
-	}
+	race.Run[int](context.Background(), runners)
 }   
 ```

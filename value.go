@@ -2,66 +2,59 @@ package async
 
 import (
 	"sync"
-	"time"
 )
 
-func NewValue() *Value {
-	return &Value{}
+func NewValue[T any]() *Value[T] {
+	return &Value[T]{}
 }
 
-type Value struct {
-	value any
+type Value[T any] struct {
+	value T
 	lock  sync.RWMutex
 }
 
-func (r *Value) SetValue(val any) {
+func (r *Value[T]) SetValue(val T) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.value = val
 }
 
-func (r *Value) GetValue() any {
+func (r *Value[T]) GetValue() T {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	
 	return r.value
 }
 
-func NewValues() *Values {
-	return &Values{}
+func NewValues[T any]() *Values[T] {
+	return &Values[T]{}
 }
 
-type Values struct {
+type Values[T any] struct {
 	lock   sync.Mutex
-	values []any
+	values []T
 }
 
-func (r *Values) AddValue(val any) {
+func (r *Values[T]) AddValue(val T) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
-	
 	r.values = append(r.values, val)
 }
 
-func (r *Values) GetValues() []any {
+func (r *Values[T]) GetValues() []T {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	
-	var values []any
+	var values []T
 	for _, v := range r.values {
 		values = append(values, v)
 	}
 	return values
 }
 
-func (r *Values) Empty() bool {
+func (r *Values[T]) Empty() bool {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	
 	return len(r.values) == 0
-}
-
-type NamedElapsed struct {
-	Name    string
-	Elapsed time.Duration
 }

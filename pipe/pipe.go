@@ -6,14 +6,14 @@ import (
 	"reflect"
 )
 
-type IRunner interface {
-	Runner() Runner
+type IRunner[T any] interface {
+	Runner() Runner[T]
 }
 
-type Runner func(ctx context.Context, initial any) (err error)
+type Runner[T any] func(ctx context.Context, initial *T) (err error)
 
 // Run 按管道处理任务，可提前终止
-func Run(ctx context.Context, initial any, runners []Runner) (err error) {
+func Run[T any](ctx context.Context, initial *T, runners []Runner[T]) (err error) {
 	if reflect.TypeOf(initial).Kind() != reflect.Pointer {
 		err = fmt.Errorf("initial expect a pointer")
 		return
