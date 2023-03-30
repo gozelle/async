@@ -1,5 +1,11 @@
 # Async 
 
+## 安装
+
+```
+go get -u github.com/gozelle/async
+```
+
 
 ## parallel 并发调用
 
