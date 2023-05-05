@@ -10,6 +10,7 @@ func Run(interval time.Duration, runner func()) {
 	if interval < time.Second {
 		interval = time.Second
 	}
+	runner()
 	timer := time.NewTimer(interval)
 	defer func() {
 		timer.Stop()
