@@ -70,7 +70,7 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 				return
 			}
 			
-			r, e := f.Runner(cctx)
+			r, e := f.Runner(ctx)
 			if e != nil {
 				ve.AddValue(e)
 				return
