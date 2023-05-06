@@ -20,7 +20,7 @@ type Runner[T any] struct {
 }
 
 // Run
-// 并发执行 Runner, 返回其中最快的结果
+// 并发执行 Runner, 返回其中最快的结果, 忽略其它较慢的结果或错误
 // 如果全部返回错误，则返回出现的第一个错误
 // 配置延迟执行的 Runner，会在等待配置时间后，再开始执行
 func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error) {
@@ -48,7 +48,6 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 			go func() {
 				select {
 				case <-cctx.Done():
-					
 					if done.Load() == nil {
 						wg.Done()
 						done.Store(true)
@@ -63,11 +62,12 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 				}
 			}()
 			
-			if cctx.Err() != nil {
-				return
-			}
 			if f.Delay > 0 {
 				time.Sleep(f.Delay)
+			}
+			
+			if cctx.Err() != nil {
+				return
 			}
 			
 			r, e := f.Runner(cctx)
@@ -82,13 +82,12 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 		}(f)
 	}
 	wg.Wait()
-	
-	if !ve.Empty() {
-		err = multierr.Combine(ve.GetValues()...)
+	if !vr.Empty() {
+		result = vr.Value()
 		return
 	}
 	
-	result = vr.GetValue()
+	err = multierr.Combine(ve.Values()...)
 	
 	return
 }
