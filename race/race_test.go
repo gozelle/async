@@ -14,6 +14,23 @@ func TestDelayRace(t *testing.T) {
 		{
 			Delay: 0,
 			Runner: func(ctx context.Context) (result int, err error) {
+				result = 0
+				time.Sleep(5 * time.Second)
+				t.Log(result)
+				return
+			},
+		},
+		{
+			Delay: 0,
+			Runner: func(ctx context.Context) (result int, err error) {
+				result = 0
+				err = fmt.Errorf("some error")
+				return
+			},
+		},
+		{
+			Delay: 1,
+			Runner: func(ctx context.Context) (result int, err error) {
 				result = 1
 				t.Log(result)
 				return
@@ -45,7 +62,7 @@ func TestDelayRace(t *testing.T) {
 func TestRaceError(t *testing.T) {
 	runners := []*race.Runner[int]{
 		{
-			Delay: 0,
+			Delay: 1,
 			Runner: func(ctx context.Context) (result int, err error) {
 				result = 1
 				err = fmt.Errorf("some error form: 1")
@@ -55,16 +72,16 @@ func TestRaceError(t *testing.T) {
 		{
 			Delay: 2 * time.Second,
 			Runner: func(ctx context.Context) (result int, err error) {
-				result = 3
-				err = fmt.Errorf("some error form: 3")
+				result = 2
+				err = fmt.Errorf("some error form: 2")
 				return
 			},
 		},
 		{
 			Delay: 3 * time.Second,
 			Runner: func(ctx context.Context) (result int, err error) {
-				result = 2
-				err = fmt.Errorf("some error form: 2")
+				result = 3
+				err = fmt.Errorf("some error form: 3")
 				return
 			},
 		},
@@ -72,5 +89,5 @@ func TestRaceError(t *testing.T) {
 	
 	_, err := race.Run[int](context.Background(), runners)
 	require.Error(t, err)
-	t.Log(err)
+	require.Equal(t, "some error form: 1; some error form: 2; some error form: 3", err.Error())
 }

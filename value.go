@@ -9,17 +9,26 @@ func NewValue[T any]() *Value[T] {
 }
 
 type Value[T any] struct {
-	value T
-	lock  sync.RWMutex
+	value    T
+	nonempty bool
+	lock     sync.RWMutex
+}
+
+func (r *Value[T]) Empty() bool {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+	
+	return !r.nonempty
 }
 
 func (r *Value[T]) SetValue(val T) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.value = val
+	r.nonempty = true
 }
 
-func (r *Value[T]) GetValue() T {
+func (r *Value[T]) Value() T {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	
@@ -41,7 +50,7 @@ func (r *Values[T]) AddValue(val T) {
 	r.values = append(r.values, val)
 }
 
-func (r *Values[T]) GetValues() []T {
+func (r *Values[T]) Values() []T {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	
@@ -49,6 +58,7 @@ func (r *Values[T]) GetValues() []T {
 	for _, v := range r.values {
 		values = append(values, v)
 	}
+	
 	return values
 }
 
