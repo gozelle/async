@@ -10,7 +10,7 @@ type IRunner[T any] interface {
 	Runner() Runner[T]
 }
 
-type Runner[T any] func(ctx context.Context, initial *T) (err error)
+type Runner[T any] func(ctx context.Context, initial *T) error
 
 // Run 按管道处理任务，可提前终止
 func Run[T any](ctx context.Context, initial *T, runners []Runner[T]) (err error) {
