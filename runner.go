@@ -8,4 +8,4 @@ type IRunner[T any] interface {
 	Runner() Runner[T]
 }
 
-type Runner[T any] func(ctx context.Context) (result T, err error)
+type Runner[T any] func(ctx context.Context) (T, error)
