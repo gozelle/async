@@ -33,10 +33,10 @@ func run() (err error) {
 	for v := range results {
 		if v.Error != nil {
 			// 错误处理
-		} else {
-			// 处理数据
-			_ = v.Value
+			return
 		}
+		// 处理数据
+		_ = v.Value
 	}
 	
 	return
