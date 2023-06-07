@@ -31,7 +31,7 @@ func run() (err error) {
 	
 	// 固定写法，用于从通道中接收处理结果
 	for v := range results {
-		if v.Error != nil {
+		if err = v.Error; err != nil {
 			// 错误处理
 			return
 		}
