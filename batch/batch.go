@@ -1,6 +1,7 @@
 package batch
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -23,14 +24,22 @@ type Batch[T any] struct {
 	interval  time.Duration // 处理时间间隔
 	handler   Handler[T]
 	done      chan struct{}
+	closed    bool
 	threshold uint
 }
 
 func (b *Batch[T]) Stop() {
 	b.done <- struct{}{}
+	b.closed = true
 }
 
-func (b *Batch[T]) Add(data T) {
+func (b *Batch[T]) Add(data T) (err error) {
+
+	if b.closed {
+		err = fmt.Errorf("batch has closed")
+		return
+	}
+
 	b.lock.Lock()
 	defer func() {
 		b.lock.Unlock()
@@ -45,6 +54,7 @@ func (b *Batch[T]) Start() {
 		close(b.done)
 	}()
 
+	b.closed = false
 	ticker := time.NewTicker(b.interval)
 	defer func() {
 		ticker.Stop()
