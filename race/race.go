@@ -32,6 +32,10 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 		return
 	}
 	
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	
 	cctx, cancel := context.WithCancel(ctx)
 	defer func() {
 		cancel()
