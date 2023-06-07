@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+type Null = async.Null
+
 type Result[T any] struct {
 	Error error
 	Value T
@@ -24,6 +26,10 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 			close(results)
 		}()
 		return results
+	}
+	
+	if ctx == nil {
+		ctx = context.Background()
 	}
 	
 	cctx, cancel := context.WithCancel(ctx)

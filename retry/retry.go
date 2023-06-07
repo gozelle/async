@@ -18,6 +18,11 @@ func Run[T any](ctx context.Context, times int, interval time.Duration, runner R
 		err = fmt.Errorf("times expact > 1, got: %d", times)
 		return
 	}
+	
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	
 	for i := 0; i < times; i++ {
 		result, err = runner(ctx)
 		if err == nil {

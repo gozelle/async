@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+type Null = async.Null
+
 type IRunner[T any] interface {
 	Runner() Runner[T]
 }
@@ -28,6 +30,10 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 	if len(runners) == 0 {
 		err = fmt.Errorf("no runners")
 		return
+	}
+	
+	if ctx == nil {
+		ctx = context.Background()
 	}
 	
 	cctx, cancel := context.WithCancel(ctx)
