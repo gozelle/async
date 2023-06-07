@@ -46,6 +46,8 @@ func (b *Batch[T]) Add(data T) (err error) {
 	}()
 
 	b.data = append(b.data, data)
+
+	return
 }
 
 func (b *Batch[T]) Start() {
