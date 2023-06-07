@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+type Null = async.Null
+
 type Result[T any] struct {
 	Error error
 	Value T
