@@ -33,7 +33,8 @@ func (b *Bucket[T]) Stop() {
 	b.closed = true
 }
 
-func (b *Bucket[T]) Add(data T) (err error) {
+// Push 仅当桶处于 closed 状态时会报错
+func (b *Bucket[T]) Push(data T) (err error) {
 
 	if b.closed {
 		err = fmt.Errorf("bucket has closed")

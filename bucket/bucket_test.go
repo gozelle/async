@@ -25,7 +25,7 @@ func TestBatch(t *testing.T) {
 		if i > 100000000 {
 			break
 		}
-		b.Add(i)
+		b.Push(i)
 		//time.Sleep(1 * time.Millisecond)
 		//if i%100 == 0 {
 		//	time.Sleep(2 * time.Second)
