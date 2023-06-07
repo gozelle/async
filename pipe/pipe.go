@@ -26,6 +26,10 @@ func Run[T any](ctx context.Context, initial *T, runners []Runner[T]) (err error
 		return
 	}
 	
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	
 	for _, v := range runners {
 		err = v(ctx, initial)
 		if err != nil {
