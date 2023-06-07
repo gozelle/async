@@ -16,7 +16,7 @@ func run() (err error) {
 	
 	// 生成 runner
 	runner := func(index int) parallel.Runner[int] {
-		return func(ctx context.Context) (result int, err error) {
+		return func(ctx context.Context) (int, error) {
 			return index, nil
 		}
 	}
