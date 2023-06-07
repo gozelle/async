@@ -1,3 +1,3 @@
 package async
 
-type Null int
+type Null *int
