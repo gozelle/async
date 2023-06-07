@@ -15,6 +15,10 @@ func TestBatch(t *testing.T) {
 
 	go b.Start()
 
+	go func() {
+
+	}()
+
 	i := 0
 	for {
 		i++
@@ -27,4 +31,5 @@ func TestBatch(t *testing.T) {
 		//	time.Sleep(2 * time.Second)
 		//}
 	}
+	select {}
 }
