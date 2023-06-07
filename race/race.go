@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+type Null = async.Null
+
 type IRunner[T any] interface {
 	Runner() Runner[T]
 }
