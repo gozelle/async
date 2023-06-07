@@ -3,8 +3,11 @@ package pipe
 import (
 	"context"
 	"fmt"
+	"github.com/gozelle/async"
 	"reflect"
 )
+
+type Null = async.Null
 
 type IRunner[T any] interface {
 	Runner() Runner[T]
