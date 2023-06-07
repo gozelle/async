@@ -1,15 +1,13 @@
-package batch_test
+package bucket_test
 
 import (
 	"testing"
 	"time"
-
-	"github.com/gozelle/async/batch"
 )
 
 func TestBatch(t *testing.T) {
 
-	b := batch.NewBatch[int](2*time.Second, 500, func(done <-chan struct{}, data []int) {
+	b := bucket.NewBatch[int](2*time.Second, 500, func(done <-chan struct{}, data []int) {
 		t.Log(len(data))
 	})
 
