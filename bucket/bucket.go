@@ -66,7 +66,7 @@ func (b *Bucket[T]) Start() {
 	for {
 		select {
 		case <-b.done:
-			break
+			return
 		case <-ticker.C:
 			if len(b.data) > 0 {
 				b.process()
