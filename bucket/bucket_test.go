@@ -1,35 +1,32 @@
 package bucket_test
 
 import (
+	"log"
 	"testing"
 	"time"
-
+	
 	"github.com/gozelle/async/bucket"
 )
 
 func TestBatch(t *testing.T) {
-
-	b := bucket.NewBucket[int](2*time.Second, 500, func(done <-chan struct{}, data []int) {
-		t.Log(len(data))
+	
+	b := bucket.NewBucket[int](500, 200*time.Millisecond, func(done <-chan struct{}, data []int) {
+		log.Printf("%d", len(data))
 	})
-
-	go b.Start()
-
 	go func() {
-
-	}()
-
-	i := 0
-	for {
-		i++
-		if i > 100000000 {
-			break
+		i := 0
+		for {
+			i++
+			if i > 1000000 {
+				b.Stop()
+				break
+			}
+			err := b.Push(i)
+			if err != nil {
+				t.Log(err)
+				break
+			}
 		}
-		b.Push(i)
-		//time.Sleep(1 * time.Millisecond)
-		//if i%100 == 0 {
-		//	time.Sleep(2 * time.Second)
-		//}
-	}
-	select {}
+	}()
+	b.Start()
 }
