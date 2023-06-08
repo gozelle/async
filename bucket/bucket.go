@@ -8,13 +8,13 @@ import (
 
 type Handler[T any] func(done <-chan struct{}, data []T)
 
-func NewBucket[T any](interval time.Duration, threshold uint, handler Handler[T]) *Bucket[T] {
+func NewBucket[T any](threshold uint, interval time.Duration, handler Handler[T]) *Bucket[T] {
 	return &Bucket[T]{
 		data:      make([]T, 0),
+		threshold: threshold,
 		interval:  interval,
 		handler:   handler,
 		done:      make(chan struct{}),
-		threshold: threshold,
 	}
 }
 
@@ -35,34 +35,34 @@ func (b *Bucket[T]) Stop() {
 
 // Push 仅当桶处于 closed 状态时会报错
 func (b *Bucket[T]) Push(data T) (err error) {
-
+	
 	if b.closed {
 		err = fmt.Errorf("bucket has closed")
 		return
 	}
-
+	
 	b.lock.Lock()
 	defer func() {
 		b.lock.Unlock()
 	}()
-
+	
 	b.data = append(b.data, data)
-
+	
 	return
 }
 
 func (b *Bucket[T]) Start() {
-
+	
 	defer func() {
 		close(b.done)
 	}()
-
+	
 	b.closed = false
 	ticker := time.NewTicker(b.interval)
 	defer func() {
 		ticker.Stop()
 	}()
-
+	
 	for {
 		select {
 		case <-b.done:
@@ -80,15 +80,15 @@ func (b *Bucket[T]) Start() {
 }
 
 func (b *Bucket[T]) process() {
-
+	
 	b.lock.Lock()
 	defer func() {
 		b.lock.Unlock()
 	}()
-
+	
 	if b.handler != nil {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
-
+	
 	b.data = nil
 }
