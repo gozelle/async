@@ -29,15 +29,14 @@ func run() (err error) {
 	// 同时最多有 10 个并发
 	results := parallel.Run[int](context.Background(), 10, runners)
 	
-	// 固定写法，用于从通道中接收处理结果
-	for v := range results {
-		if err = v.Error; err != nil {
-			// 错误处理
-			return
-		}
-		// 处理数据
-		_ = v.Value
-	}
+	// 处理结果
+	err = parallel.Wait[int](results, func(v int) error {
+		fmt.Println(v)
+		return nil
+	})
+	if err != nil{
+		return
+    }
 	
 	return
 }
