@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
-
+	
 	"github.com/gozelle/async"
 )
 
@@ -18,9 +18,9 @@ type Result[T any] struct {
 type Runner[T any] async.Runner[T]
 
 func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Result[T] {
-
+	
 	results := make(chan *Result[T], len(runners))
-
+	
 	if limit == 0 {
 		defer func() {
 			results <- &Result[T]{Error: fmt.Errorf("limit expect great than 0")}
@@ -28,16 +28,16 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		}()
 		return results
 	}
-
+	
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	
 	cctx, cancel := context.WithCancel(ctx)
 	wg := sync.WaitGroup{}
-
+	
 	sem := make(chan struct{}, limit)
-
+	
 	for _, v := range runners {
 		wg.Add(1)
 		sem <- struct{}{}
@@ -60,14 +60,14 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 			}
 		}(v)
 	}
-
+	
 	go func() {
 		wg.Wait()
 		close(results)
 		close(sem)
 		cancel()
 	}()
-
+	
 	return results
 }
 
@@ -76,11 +76,13 @@ func Wait[T any](results <-chan *Result[T], handler func(v T) error) error {
 		if item.Error != nil {
 			return item.Error
 		}
-		err := handler(item.Value)
-		if err != nil {
-			return err
+		if handler != nil {
+			err := handler(item.Value)
+			if err != nil {
+				return err
+			}
 		}
 	}
-
+	
 	return nil
 }
