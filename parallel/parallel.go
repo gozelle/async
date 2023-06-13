@@ -3,6 +3,7 @@ package parallel
 import (
 	"context"
 	"fmt"
+	"github.com/gozelle/atomic"
 	"sync"
 	
 	"github.com/gozelle/async"
@@ -33,39 +34,38 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		ctx = context.Background()
 	}
 	
-	cctx, cancel := context.WithCancel(ctx)
+	err := atomic.NewError(nil)
 	wg := sync.WaitGroup{}
-	
 	sem := make(chan struct{}, limit)
 	
 	for _, v := range runners {
-		wg.Add(1)
 		sem <- struct{}{}
+		if err.Load() != nil {
+			<-sem
+			continue
+		}
+		wg.Add(1)
 		go func(runner Runner[T]) {
 			defer func() {
 				<-sem
 				wg.Done()
 			}()
-			select {
-			case <-cctx.Done():
-				return
-			default:
-				r, err := runner(ctx)
-				if err != nil {
-					results <- &Result[T]{Error: err}
-					cancel()
-				} else {
-					results <- &Result[T]{Value: r}
-				}
+			r, e := runner(ctx)
+			if e != nil {
+				err.Store(e)
+			} else {
+				results <- &Result[T]{Value: r}
 			}
 		}(v)
 	}
 	
 	go func() {
 		wg.Wait()
+		if err.Load() != nil {
+			results <- &Result[T]{Error: err.Load()}
+		}
 		close(results)
 		close(sem)
-		cancel()
 	}()
 	
 	return results
