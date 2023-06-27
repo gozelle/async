@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gozelle/atomic"
+	"runtime/debug"
 	"sync"
 	
 	"github.com/gozelle/async"
@@ -47,9 +48,15 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		wg.Add(1)
 		go func(runner Runner[T]) {
 			defer func() {
+				e := recover()
+				if e != nil {
+					err.Store(fmt.Errorf("%v", e))
+					debug.PrintStack()
+				}
 				<-sem
 				wg.Done()
 			}()
+			
 			r, e := runner(ctx)
 			if e != nil {
 				err.Store(e)
