@@ -14,3 +14,5 @@ github.com/gozelle/testify v1.8.11/go.mod h1:vYSBvyNev2JwOWCafPzpqdL3xuxy79bECwK
 github.com/gozelle/text v0.2.0 h1:p0p6mIm1aD0lDN798Pfx9T0itU8O/iUoauFvPUtV6Gw=
 github.com/gozelle/yaml v0.0.0-20221214152138-81b78a92d903 h1:Z5bL8fjqThaLRa3MdQoESurwiUh8KZksKRQvLWY+h/c=
 github.com/gozelle/yaml v0.0.0-20221214152138-81b78a92d903/go.mod h1:0Pp3KXweJJtxd5jzd6y3qW2DpjEFAlYc7oRDtuhMFjg=
+golang.org/x/sync v0.3.0 h1:ftCYgMx6zT/asHUrPw8BLLscYtGznsLAnjq5RH9P66E=
+golang.org/x/sync v0.3.0/go.mod h1:FU7BRWz2tNW+3quACPkgCx/L+uEAv1htQ0V83Z9Rj+Y=
