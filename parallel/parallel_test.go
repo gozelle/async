@@ -260,3 +260,30 @@ func run() (err error) {
 	
 	return
 }
+
+func TestRunWithCancel(t *testing.T) {
+	
+	var runners []parallel.Runner[int]
+	
+	for i := 1; i <= 5; i++ {
+		v := i
+		runners = append(runners, func(ctx context.Context) (result int, err error) {
+			time.Sleep(time.Duration(v) * time.Second)
+			t.Log(v)
+			return
+		})
+	}
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer func() {
+		cancel()
+	}()
+	
+	values := parallel.Run[int](ctx, 2, runners)
+	
+	err := parallel.Wait[int](values, func(v int) error {
+		return nil
+	})
+	require.Error(t, err)
+	
+}

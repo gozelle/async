@@ -9,8 +9,14 @@ func NewGroup() *Group {
 }
 
 type Group struct {
-	fns   []func() error
-	limit uint
+	cancel func()
+	fns    []func() error
+	limit  uint
+	ctx    context.Context
+}
+
+func (g *Group) SetContext(ctx context.Context) {
+	g.ctx = ctx
 }
 
 func (g *Group) SetLimit(limit uint) {
@@ -28,7 +34,7 @@ func (g *Group) Wait() error {
 	if g.limit == 0 {
 		g.limit = 10
 	}
-	res := Run[Null](context.Background(), g.limit, runners)
+	res := Run[Null](g.ctx, g.limit, runners)
 	return Wait[Null](res, nil)
 }
 

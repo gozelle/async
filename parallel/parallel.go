@@ -38,6 +38,16 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 	err := atomic.NewError(nil)
 	wg := sync.WaitGroup{}
 	sem := make(chan struct{}, limit)
+	done := make(chan struct{})
+	
+	go func() {
+		select {
+		case <-ctx.Done():
+			err.Store(ctx.Err())
+		case <-done:
+			return
+		}
+	}()
 	
 	for _, v := range runners {
 		sem <- struct{}{}
@@ -71,6 +81,7 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		if err.Load() != nil {
 			results <- &Result[T]{Error: err.Load()}
 		}
+		close(done)
 		close(results)
 		close(sem)
 	}()
