@@ -34,7 +34,7 @@ func (p *panicError) Error() string {
 
 func newPanicError(v interface{}) error {
 	stack := debug.Stack()
-	
+
 	// The first line of the stack trace is of the form "goroutine N [status]:"
 	// but by the time the panic reaches Do the goroutine may no longer exist
 	// and its status will have changed. Trim out the misleading line.
@@ -47,12 +47,12 @@ func newPanicError(v interface{}) error {
 // call is an in-flight or completed singleflight.Do call
 type call[T any] struct {
 	wg sync.WaitGroup
-	
+
 	// These fields are written once before the WaitGroup is done
 	// and are only read after the WaitGroup is done.
 	val interface{}
 	err error
-	
+
 	// These fields are read and written with the singleflight
 	// mutex held before the WaitGroup is done, and are read but
 	// not written after the WaitGroup is done.
@@ -89,7 +89,7 @@ func (g *Group[T]) Do(key string, fn func() (T, error)) (r Result[T], err error,
 		c.dups++
 		g.mu.Unlock()
 		c.wg.Wait()
-		
+
 		if e, okk := c.err.(*panicError); okk {
 			panic(e)
 		} else if c.err == errGoexit {
@@ -106,7 +106,7 @@ func (g *Group[T]) Do(key string, fn func() (T, error)) (r Result[T], err error,
 	c.wg.Add(1)
 	g.m[key] = c
 	g.mu.Unlock()
-	
+
 	g.doCall(c, key, fn)
 	r = Result[T]{
 		Val:    c.val,
@@ -136,9 +136,9 @@ func (g *Group[T]) DoChan(key string, fn func() (T, error)) <-chan Result[T] {
 	c.wg.Add(1)
 	g.m[key] = c
 	g.mu.Unlock()
-	
+
 	go g.doCall(c, key, fn)
-	
+
 	return ch
 }
 
@@ -146,7 +146,7 @@ func (g *Group[T]) DoChan(key string, fn func() (T, error)) <-chan Result[T] {
 func (g *Group[T]) doCall(c *call[T], key string, fn func() (T, error)) {
 	normalReturn := false
 	recovered := false
-	
+
 	// use double-defer to distinguish panic from runtime.Goexit,
 	// more details see https://golang.org/cl/134395
 	defer func() {
@@ -154,19 +154,19 @@ func (g *Group[T]) doCall(c *call[T], key string, fn func() (T, error)) {
 		if !normalReturn && !recovered {
 			c.err = errGoexit
 		}
-		
+
 		g.mu.Lock()
 		defer g.mu.Unlock()
 		c.wg.Done()
 		if g.m[key] == c {
 			delete(g.m, key)
 		}
-		
+
 		if e, ok := c.err.(*panicError); ok {
-			
+
 			// In order to prevent the waiting channels from being blocked forever,
 			// needs to ensure that this panic cannot be recovered.
-			
+
 			if len(c.chans) > 0 {
 				go panic(e)
 				select {} // Keep this goroutine around so that it will appear in the crash dump.
@@ -182,7 +182,7 @@ func (g *Group[T]) doCall(c *call[T], key string, fn func() (T, error)) {
 			}
 		}
 	}()
-	
+
 	func() {
 		defer func() {
 			if !normalReturn {
@@ -198,11 +198,11 @@ func (g *Group[T]) doCall(c *call[T], key string, fn func() (T, error)) {
 				}
 			}
 		}()
-		
+
 		c.val, c.err = fn()
 		normalReturn = true
 	}()
-	
+
 	if !normalReturn {
 		recovered = true
 	}
