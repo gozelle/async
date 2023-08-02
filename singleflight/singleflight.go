@@ -163,8 +163,10 @@ func (g *Group[T]) doCall(c *call[T], key string, fn func() (T, error)) {
 		}
 		
 		if e, ok := c.err.(*panicError); ok {
+			
 			// In order to prevent the waiting channels from being blocked forever,
 			// needs to ensure that this panic cannot be recovered.
+			
 			if len(c.chans) > 0 {
 				go panic(e)
 				select {} // Keep this goroutine around so that it will appear in the crash dump.
