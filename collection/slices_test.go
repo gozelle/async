@@ -1,4 +1,4 @@
-package slices
+package collection
 
 import "testing"
 

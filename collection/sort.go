@@ -1,4 +1,4 @@
-package slices
+package collection
 
 import (
 	"github.com/gozelle/async/generics"

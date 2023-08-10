@@ -1,4 +1,4 @@
-package slices
+package collection
 
 // UniqueKeys Slices Get a unique slices
 // T => slice item type
