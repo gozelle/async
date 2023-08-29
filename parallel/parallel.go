@@ -3,7 +3,7 @@ package parallel
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/atomic"
+	"github.com/gozelle/multierr"
 	"runtime/debug"
 	"sync"
 	
@@ -21,74 +21,84 @@ type Runner[T any] async.Runner[T]
 
 func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Result[T] {
 	
-	results := make(chan *Result[T], len(runners))
+	ch := make(chan *Result[T], len(runners))
 	
 	if limit == 0 {
 		defer func() {
-			results <- &Result[T]{Error: fmt.Errorf("limit expect great than 0")}
-			close(results)
+			ch <- &Result[T]{Error: fmt.Errorf("limit expect great than 0")}
+			close(ch)
 		}()
-		return results
+		return ch
 	}
 	
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	
-	//go func() {
-	//	select {
-	//	case <-ctx.Done():
-	//		err.Store(ctx.Err())
-	//	case <-done:
-	//		return
-	//	}
-	//}()
+	go run[T](ctx, limit, runners, ch)
 	
-	go run[T](ctx, limit, runners, results)
-	
-	return results
+	return ch
 }
-func run[T any](ctx context.Context, limit uint, runners []Runner[T], results chan *Result[T]) {
-	err := atomic.NewError(nil)
+func run[T any](ctx context.Context, limit uint, runners []Runner[T], ch chan *Result[T]) {
+	
+	errs := multierr.Errors{}
 	wg := sync.WaitGroup{}
 	sem := make(chan struct{}, limit)
-	done := make(chan struct{})
-	for _, v := range runners {
-		sem <- struct{}{}
-		if err.Load() != nil {
-			<-sem
-			continue
-		}
-		wg.Add(1)
-		go func(runner Runner[T]) {
-			defer func() {
-				e := recover()
-				if e != nil {
-					err.Store(fmt.Errorf("%v", e))
-					debug.PrintStack()
-				}
-				<-sem
-				wg.Done()
-			}()
-			
-			r, e := runner(ctx)
-			if e != nil {
-				err.Store(e)
-			} else {
-				results <- &Result[T]{Value: r}
-			}
-		}(v)
-	}
 	
-	go func() {
-		wg.Wait()
-		if err.Load() != nil {
-			results <- &Result[T]{Error: err.Load()}
-		}
-		close(done)
-		close(results)
+	defer func() {
+		close(ch)
 		close(sem)
 	}()
+	
+	for _, v := range runners {
+		
+		// achieve a blocking effect by sending semaphores to a channel with a specified capacity of "limit"
+		// when the channel is full, it will block here until a task is completed and frees up channel capacity
+		sem <- struct{}{}
+		
+		// if the semaphore is acquired, prioritize checking whether the context has done. 
+		// if it has, break out of the for loop.
+		select {
+		case <-ctx.Done():
+			errs.AddError(ctx.Err())
+			break
+		default:
+			// when an error occurs, the semaphores of all subsequent tasks will be directly ignored.
+			if errs.Error() != nil {
+				<-sem
+				continue
+			}
+			wg.Add(1)
+			go func(runner Runner[T]) {
+				defer func() {
+					e := recover()
+					if e != nil {
+						errs.AddError(fmt.Errorf("%v", e))
+						debug.PrintStack()
+					}
+					// the task has been executed to completion,
+					// release the semaphore.
+					<-sem
+					wg.Done()
+				}()
+				
+				r, e := runner(ctx)
+				if e != nil {
+					errs.AddError(e)
+				} else {
+					ch <- &Result[T]{Value: r}
+				}
+			}(v)
+		}
+	}
+	
+	wg.Wait()
+	
+	// all tasks have been completed. 
+	// check for any errors and ensure that the error is the last result sent to the channel.
+	if errs.Error() != nil {
+		ch <- &Result[T]{Error: errs.Error()}
+	}
 }
 
 func Wait[T any](results <-chan *Result[T], handler func(v T) error) error {

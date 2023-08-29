@@ -6,6 +6,8 @@ github.com/gozelle/go-difflib v1.0.0/go.mod h1:PcDy306aUy3I8kB5ohutXpbhkgQlygtcB
 github.com/gozelle/go-internal v1.9.0 h1:VVobf+WAesfyYtHklxbmzo+2IXdTw3PxiwkmwC6QTTA=
 github.com/gozelle/go-spew v1.1.10 h1:kFDq5IDd/Wk3l7UutORhveCt5fUdW8b9afnDYtuHmEc=
 github.com/gozelle/go-spew v1.1.10/go.mod h1:qwUFQBhiE5zwtTAfe/m87+73t2jRbNHwGOvs+FgYx+8=
+github.com/gozelle/multierr v0.0.1 h1:JvYYvGTGusBS6IEOTOmoroY4SqW5PU2S29Yi8T4UvnE=
+github.com/gozelle/multierr v0.0.1/go.mod h1:Kd/mRKyMcPywI5eYDaMeiecSeRhgAsu8nIx35ic5NvE=
 github.com/gozelle/multierr v1.9.10 h1:EUU22u5Yx82/mQm55fH1WF6ztp0w4U+cZl9lCzuyUvE=
 github.com/gozelle/multierr v1.9.10/go.mod h1:4tC7qdet8CoxU9Q/Ha2bn5obpheqU7bTB9AENXwWzaI=
 github.com/gozelle/pretty v0.3.1 h1:dtU7yIlzRqiMmB9TcunypDfvAC/QOP0K8y/BKKOrgRg=

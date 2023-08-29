@@ -3,7 +3,7 @@ module github.com/gozelle/async
 go 1.18
 
 require (
-	github.com/gozelle/multierr v1.9.10
+	github.com/gozelle/multierr v0.0.1
 	github.com/gozelle/testify v1.8.11
 )
 
