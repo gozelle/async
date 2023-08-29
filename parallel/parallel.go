@@ -3,7 +3,7 @@ package parallel
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/multierr"
+	"github.com/gozelle/multierror"
 	"runtime/debug"
 	"sync"
 	
@@ -41,7 +41,7 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 }
 func run[T any](ctx context.Context, limit uint, runners []Runner[T], ch chan *Result[T]) {
 	
-	errs := multierr.Errors{}
+	errs := multierror.Errors{}
 	wg := sync.WaitGroup{}
 	sem := make(chan struct{}, limit)
 	
