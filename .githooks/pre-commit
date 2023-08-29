@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo "this is from pre commit script"
