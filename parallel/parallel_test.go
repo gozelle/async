@@ -20,15 +20,17 @@ func TestRun1(t *testing.T) {
 		v := i
 		runners = append(runners, func(ctx context.Context) (result int, err error) {
 			result = v
+			time.Sleep(time.Duration(v) * time.Second)
 			return
 		})
 	}
 	
 	values := parallel.Run[int](context.Background(), 2, runners)
-	
+	t.Log("begin")
 	n := 0
 	err := parallel.Wait[int](values, func(v int) error {
 		n += v
+		t.Log(v)
 		return nil
 	})
 	require.NoError(t, err)

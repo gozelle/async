@@ -35,20 +35,24 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		ctx = context.Background()
 	}
 	
+	//go func() {
+	//	select {
+	//	case <-ctx.Done():
+	//		err.Store(ctx.Err())
+	//	case <-done:
+	//		return
+	//	}
+	//}()
+	
+	go run[T](ctx, limit, runners, results)
+	
+	return results
+}
+func run[T any](ctx context.Context, limit uint, runners []Runner[T], results chan *Result[T]) {
 	err := atomic.NewError(nil)
 	wg := sync.WaitGroup{}
 	sem := make(chan struct{}, limit)
 	done := make(chan struct{})
-	
-	go func() {
-		select {
-		case <-ctx.Done():
-			err.Store(ctx.Err())
-		case <-done:
-			return
-		}
-	}()
-	
 	for _, v := range runners {
 		sem <- struct{}{}
 		if err.Load() != nil {
@@ -85,8 +89,6 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		close(results)
 		close(sem)
 	}()
-	
-	return results
 }
 
 func Wait[T any](results <-chan *Result[T], handler func(v T) error) error {
