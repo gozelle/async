@@ -3,11 +3,11 @@ package parallel
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/multierror"
 	"runtime/debug"
 	"sync"
-	
+
 	"github.com/gozelle/async"
+	"github.com/gozelle/async/multierr"
 )
 
 type Null = async.Null
@@ -20,9 +20,9 @@ type Result[T any] struct {
 type Runner[T any] async.Runner[T]
 
 func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Result[T] {
-	
+
 	ch := make(chan *Result[T], len(runners))
-	
+
 	if limit == 0 {
 		defer func() {
 			ch <- &Result[T]{Error: fmt.Errorf("limit expect great than 0")}
@@ -30,33 +30,33 @@ func Run[T any](ctx context.Context, limit uint, runners []Runner[T]) <-chan *Re
 		}()
 		return ch
 	}
-	
+
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	
+
 	go run[T](ctx, limit, runners, ch)
-	
+
 	return ch
 }
 func run[T any](ctx context.Context, limit uint, runners []Runner[T], ch chan *Result[T]) {
-	
-	errs := multierror.Errors{}
+
+	errs := multierr.Errors{}
 	wg := sync.WaitGroup{}
 	sem := make(chan struct{}, limit)
-	
+
 	defer func() {
 		close(ch)
 		close(sem)
 	}()
-	
+
 	for _, v := range runners {
-		
+
 		// achieve a blocking effect by sending semaphores to a channel with a specified capacity of "limit"
 		// when the channel is full, it will block here until a task is completed and frees up channel capacity
 		sem <- struct{}{}
-		
-		// if the semaphore is acquired, prioritize checking whether the context has done. 
+
+		// if the semaphore is acquired, prioritize checking whether the context has done.
 		// if it has, break out of the for loop.
 		select {
 		case <-ctx.Done():
@@ -81,7 +81,7 @@ func run[T any](ctx context.Context, limit uint, runners []Runner[T], ch chan *R
 					<-sem
 					wg.Done()
 				}()
-				
+
 				r, e := runner(ctx)
 				if e != nil {
 					errs.AddError(e)
@@ -91,10 +91,10 @@ func run[T any](ctx context.Context, limit uint, runners []Runner[T], ch chan *R
 			}(v)
 		}
 	}
-	
+
 	wg.Wait()
-	
-	// all tasks have been completed. 
+
+	// all tasks have been completed.
 	// check for any errors and ensure that the error is the last result sent to the channel.
 	if errs.Error() != nil {
 		ch <- &Result[T]{Error: errs.Error()}
@@ -113,6 +113,6 @@ func Wait[T any](results <-chan *Result[T], handler func(v T) error) error {
 			}
 		}
 	}
-	
+
 	return nil
 }

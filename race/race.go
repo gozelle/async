@@ -3,11 +3,12 @@ package race
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/async"
-	"github.com/gozelle/multierr"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/gozelle/async"
+	"github.com/gozelle/async/multierr"
 )
 
 type Null = async.Null
@@ -26,30 +27,30 @@ type Runner[T any] struct {
 // 如果全部返回错误，则返回出现的第一个错误
 // 配置延迟执行的 Runner，会在等待配置时间后，再开始执行
 func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error) {
-	
+
 	if len(runners) == 0 {
 		err = fmt.Errorf("no runners")
 		return
 	}
-	
+
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	
+
 	cctx, cancel := context.WithCancel(ctx)
 	defer func() {
 		cancel()
 	}()
-	
+
 	vr := async.NewValue[T]()
-	ve := async.NewValues[error]()
-	
+	errs := multierr.Errors{}
+
 	wg := sync.WaitGroup{}
-	
+
 	for _, f := range runners {
 		wg.Add(1)
 		go func(f *Runner[T]) {
-			
+
 			done := atomic.Value{}
 			go func() {
 				select {
@@ -60,30 +61,30 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 					}
 				}
 			}()
-			
+
 			defer func() {
 				if done.Load() == nil {
 					wg.Done()
 					done.Store(true)
 				}
 			}()
-			
+
 			if f.Delay > 0 {
 				time.Sleep(f.Delay)
 			}
-			
+
 			if cctx.Err() != nil {
 				return
 			}
-			
+
 			r, e := f.Runner(ctx)
 			if e != nil {
-				ve.AddValue(e)
+				errs.AddError(e)
 				return
 			}
 			vr.SetValue(r)
 			cancel()
-			
+
 			return
 		}(f)
 	}
@@ -92,8 +93,8 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 		result = vr.Value()
 		return
 	}
-	
-	err = multierr.Combine(ve.Values()...)
-	
+
+	err = errs.Error()
+
 	return
 }
