@@ -61,7 +61,7 @@ func run[T any](ctx context.Context, limit uint, runners []Runner[T], ch chan *R
 		select {
 		case <-ctx.Done():
 			errs.AddError(ctx.Err())
-			break
+			<-sem
 		default:
 			// when an error occurs, the semaphores of all subsequent tasks will be directly ignored.
 			if errs.Error() != nil {

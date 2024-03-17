@@ -3,19 +3,20 @@ package parallel_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
-	
+
 	"github.com/gozelle/async/parallel"
 	"github.com/gozelle/atomic"
 	"github.com/gozelle/testify/require"
 )
 
 func TestRun1(t *testing.T) {
-	
+
 	var runners []parallel.Runner[int]
-	
+
 	for i := 1; i <= 10; i++ {
 		v := i
 		runners = append(runners, func(ctx context.Context) (result int, err error) {
@@ -24,7 +25,7 @@ func TestRun1(t *testing.T) {
 			return
 		})
 	}
-	
+
 	values := parallel.Run[int](context.Background(), 2, runners)
 	t.Log("begin")
 	n := 0
@@ -38,7 +39,7 @@ func TestRun1(t *testing.T) {
 }
 
 func TestRunError(t *testing.T) {
-	
+
 	var runners []parallel.Runner[int]
 	sum := atomic.NewInt32(0)
 	for i := 1; i <= 100; i++ {
@@ -56,7 +57,7 @@ func TestRunError(t *testing.T) {
 			return
 		})
 	}
-	
+
 	values := parallel.Run[int](context.Background(), 5, runners)
 	total := int32(0)
 	err := parallel.Wait[int](values, func(v int) error {
@@ -68,7 +69,7 @@ func TestRunError(t *testing.T) {
 }
 
 func TestOversize(t *testing.T) {
-	
+
 	var runners []parallel.Runner[int]
 	sum := atomic.NewInt32(0)
 	for i := 1; i <= 100; i++ {
@@ -86,7 +87,7 @@ func TestOversize(t *testing.T) {
 			return
 		})
 	}
-	
+
 	values := parallel.Run[int](context.Background(), 200, runners)
 	total := int32(0)
 	err := parallel.Wait[int](values, func(v int) error {
@@ -99,7 +100,7 @@ func TestOversize(t *testing.T) {
 
 func TestErrorWait(t *testing.T) {
 	var runners []parallel.Runner[int]
-	
+
 	for i := 1; i <= 10; i++ {
 		v := i
 		runners = append(runners, func(ctx context.Context) (result int, err error) {
@@ -111,13 +112,13 @@ func TestErrorWait(t *testing.T) {
 			if v == 2 {
 				time.Sleep(5 * time.Second)
 			}
-			
+
 			result = v
-			
+
 			return
 		})
 	}
-	
+
 	values := parallel.Run[int](context.Background(), 3, runners)
 	err := parallel.Wait[int](values, func(v int) error {
 		t.Log(v)
@@ -129,7 +130,7 @@ func TestErrorWait(t *testing.T) {
 
 func TestRun2(t *testing.T) {
 	var runners []parallel.Runner[int]
-	
+
 	for i := 0; i < 100000; i++ {
 		v := i
 		runners = append(runners, func(ctx context.Context) (result int, err error) {
@@ -148,7 +149,7 @@ func TestRun2(t *testing.T) {
 
 func TestChan(t *testing.T) {
 	res := calc(t)
-	
+
 	for v := range res {
 		t.Log(v)
 	}
@@ -156,7 +157,7 @@ func TestChan(t *testing.T) {
 
 func calc(t *testing.T) <-chan int {
 	results := make(chan int, 10)
-	
+
 	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -172,19 +173,19 @@ func calc(t *testing.T) <-chan int {
 		t.Log("准备关闭")
 		close(results)
 	}()
-	
+
 	return results
 }
 
 func TestCloseBroadcast(t *testing.T) {
 	wg := sync.WaitGroup{}
 	c := make(chan int)
-	
+
 	go func() {
 		c <- 1
 		close(c)
 	}()
-	
+
 	worker := func(index int) {
 		wg.Add(1)
 		go func() {
@@ -202,7 +203,7 @@ func TestCloseBroadcast(t *testing.T) {
 			}
 		}()
 	}
-	
+
 	worker(1)
 	worker(2)
 	worker(3)
@@ -234,22 +235,22 @@ func TestParallel(t *testing.T) {
 }
 
 func run() (err error) {
-	
+
 	// 生成 runner
 	runner := func(index int) parallel.Runner[int] {
 		return func(ctx context.Context) (result int, err error) {
 			return index, nil
 		}
 	}
-	
+
 	var runners []parallel.Runner[int]
 	for i := 0; i < 10000; i++ {
 		runners = append(runners, runner(i))
 	}
-	
+
 	// 同时最多有 10 个并发
 	results := parallel.Run[int](context.Background(), 10, runners)
-	
+
 	// 固定写法，用于从通道中接收处理结果
 	for v := range results {
 		if v.Error != nil {
@@ -259,14 +260,14 @@ func run() (err error) {
 			_ = v.Value
 		}
 	}
-	
+
 	return
 }
 
 func TestRunWithCancel(t *testing.T) {
-	
+
 	var runners []parallel.Runner[int]
-	
+
 	for i := 1; i <= 5; i++ {
 		v := i
 		runners = append(runners, func(ctx context.Context) (result int, err error) {
@@ -275,17 +276,43 @@ func TestRunWithCancel(t *testing.T) {
 			return
 		})
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer func() {
 		cancel()
 	}()
-	
+
 	values := parallel.Run[int](ctx, 2, runners)
-	
+
 	err := parallel.Wait[int](values, func(v int) error {
 		return nil
 	})
 	require.Error(t, err)
-	
+
+}
+
+func TestContextCancel(t *testing.T) {
+
+	var runners []parallel.Runner[int]
+
+	for i := 1; i <= 10; i++ {
+		v := i
+		runners = append(runners, func(ctx context.Context) (result int, err error) {
+			result = v
+			fmt.Println(v)
+			time.Sleep(1 * time.Second)
+			return
+		})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	values := parallel.Run[int](ctx, 2, runners)
+
+	err := parallel.Wait[int](values, nil)
+	require.Error(t, err)
+	require.True(t, strings.Contains(err.Error(), "context deadline exceeded"))
 }
