@@ -1,9 +1,9 @@
-package collection
+package unique
 
-// UniqueKeys Slices Get a unique slices
+// Keys Slices Get a unique slices
 // T => slice item type
 // K => slice item filter key type
-func UniqueKeys[T any, K comparable](items []T, fn func(item T) K) []K {
+func Keys[T any, K comparable](items []T, fn func(item T) K) []K {
 	r := make([]K, 0)
 	m := map[K]struct{}{}
 	for _, v := range items {
@@ -16,10 +16,10 @@ func UniqueKeys[T any, K comparable](items []T, fn func(item T) K) []K {
 	return r
 }
 
-// UniqueMap convert slice to a map by unique key
+// Map convert slice to a map by unique key
 // T => slice item type
 // K => slice item filter key type
-func UniqueMap[T any, K comparable](items []T, fn func(item T) (K, T)) map[K]T {
+func Map[T any, K comparable](items []T, fn func(item T) (K, T)) map[K]T {
 	m := map[K]T{}
 	for _, v := range items {
 		k, vv := fn(v)

@@ -7,7 +7,7 @@ import (
 
 type Errors struct {
 	lock   sync.Mutex
-	errors []error
+	errors map[error]struct{}
 }
 
 func (e *Errors) AddError(err error) {
@@ -15,9 +15,13 @@ func (e *Errors) AddError(err error) {
 	defer func() {
 		e.lock.Unlock()
 	}()
-	if err != nil {
-		e.errors = append(e.errors, err)
+	if err == nil {
+		return
 	}
+	if e.errors == nil {
+		e.errors = make(map[error]struct{})
+	}
+	e.errors[err] = struct{}{}
 }
 
 func (e *Errors) Error() error {
@@ -27,7 +31,7 @@ func (e *Errors) Error() error {
 	}()
 	var err error
 	if e.errors != nil {
-		for _, v := range e.errors {
+		for v := range e.errors {
 			if err == nil {
 				err = v
 			} else {

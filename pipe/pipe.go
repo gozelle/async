@@ -3,8 +3,9 @@ package pipe
 import (
 	"context"
 	"fmt"
-	"github.com/gozelle/async"
 	"reflect"
+
+	"github.com/gozelle/async"
 )
 
 type Null = async.Null
@@ -25,15 +26,21 @@ func Run[T any](ctx context.Context, initial *T, runners []Runner[T]) (err error
 		err = fmt.Errorf("no runner")
 		return
 	}
-	
+
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	
+
 	for _, v := range runners {
-		err = v(ctx, initial)
-		if err != nil {
+		select {
+		case <-ctx.Done():
+			err = ctx.Err()
 			return
+		default:
+			err = v(ctx, initial)
+			if err != nil {
+				return
+			}
 		}
 	}
 	return

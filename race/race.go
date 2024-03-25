@@ -64,8 +64,8 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 
 			defer func() {
 				if done.Load() == nil {
-					wg.Done()
 					done.Store(true)
+					wg.Done()
 				}
 			}()
 
@@ -82,13 +82,14 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 				errs.AddError(e)
 				return
 			}
-			vr.SetValue(r)
+			vr.SetValueOnce(r)
 			cancel()
 
 			return
 		}(f)
 	}
 	wg.Wait()
+
 	if !vr.Empty() {
 		result = vr.Value()
 		return

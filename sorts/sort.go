@@ -1,8 +1,9 @@
-package collection
+package sorts
 
 import (
-	"github.com/gozelle/async/generics"
 	"sort"
+
+	"github.com/gozelle/async/generics"
 )
 
 var _ sort.Interface = (*sorter[any])(nil)
