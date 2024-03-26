@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/gozelle/async"
@@ -51,22 +50,22 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 		wg.Add(1)
 		go func(f *Runner[T]) {
 
-			done := atomic.Value{}
+			done := make(chan struct{})
 			go func() {
 				select {
+				case <-done:
+					wg.Done()
 				case <-cctx.Done():
-					if done.Load() == nil {
-						wg.Done()
-						done.Store(true)
+					if ctx.Err() != nil {
+						errs.AddError(ctx.Err())
 					}
+					wg.Done()
 				}
 			}()
 
 			defer func() {
-				if done.Load() == nil {
-					done.Store(true)
-					wg.Done()
-				}
+				done <- struct{}{}
+				close(done)
 			}()
 
 			if f.Delay > 0 {
