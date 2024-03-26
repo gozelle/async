@@ -41,7 +41,7 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 		cancel()
 	}()
 
-	vr := async.NewValue[T]()
+	v := async.NewValue[T]()
 	errs := multierr.Errors{}
 
 	wg := sync.WaitGroup{}
@@ -71,17 +71,16 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 			if f.Delay > 0 {
 				time.Sleep(f.Delay)
 			}
-
 			if cctx.Err() != nil {
 				return
 			}
-
+			
 			r, e := f.Runner(ctx)
 			if e != nil {
 				errs.AddError(e)
 				return
 			}
-			vr.SetValueOnce(r)
+			v.SetValueOnce(r)
 			cancel()
 
 			return
@@ -89,12 +88,12 @@ func Run[T any](ctx context.Context, runners []*Runner[T]) (result T, err error)
 	}
 	wg.Wait()
 
-	if !vr.Empty() {
-		result = vr.Value()
+	// If you get the correct result, ignore the other errors
+	if !v.Empty() {
+		result = v.Value()
 		return
 	}
 
 	err = errs.Error()
-
 	return
 }
