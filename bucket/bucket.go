@@ -35,60 +35,63 @@ func (b *Bucket[T]) Stop() {
 
 // Push 仅当桶处于 closed 状态时会报错
 func (b *Bucket[T]) Push(data T) (err error) {
-	
+
 	if b.closed {
 		err = fmt.Errorf("bucket has closed")
 		return
 	}
-	
+
 	b.lock.Lock()
 	defer func() {
 		b.lock.Unlock()
 	}()
-	
+
 	b.data = append(b.data, data)
-	
+
 	return
 }
 
 func (b *Bucket[T]) Start() {
-	
+
 	defer func() {
 		close(b.done)
 	}()
-	
+
 	b.closed = false
-	ticker := time.NewTicker(b.interval)
+	timer := time.NewTimer(b.interval)
 	defer func() {
-		ticker.Stop()
+		timer.Stop()
 	}()
-	
+
 	for {
 		select {
 		case <-b.done:
 			return
-		case <-ticker.C:
+		case <-timer.C:
 			if len(b.data) > 0 {
 				b.process()
 			}
+			timer.Reset(b.interval)
 		default:
 			if uint(len(b.data)) >= b.threshold {
+				timer.Stop()
 				b.process()
+				timer.Reset(b.interval)
 			}
 		}
 	}
 }
 
 func (b *Bucket[T]) process() {
-	
+
 	b.lock.Lock()
 	defer func() {
 		b.lock.Unlock()
 	}()
-	
+
 	if b.handler != nil {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
-	
+
 	b.data = nil
 }
