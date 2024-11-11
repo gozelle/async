@@ -90,7 +90,6 @@ func (b *Bucket[T]) process(timer *time.Timer) {
 	if b.handler != nil {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
-	timer.Reset(b.interval)
-
 	b.data = make([]T, 0)
+	timer.Reset(b.interval)
 }
