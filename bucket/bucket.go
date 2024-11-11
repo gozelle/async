@@ -71,6 +71,7 @@ func (b *Bucket[T]) Start() {
 			if len(b.data) > 0 {
 				b.process()
 			}
+			timer.Stop()
 			timer.Reset(b.interval)
 		default:
 			if uint(len(b.data)) >= b.threshold {
@@ -93,5 +94,5 @@ func (b *Bucket[T]) process() {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
 
-	b.data = nil
+	b.data = make([]T, 0)
 }
