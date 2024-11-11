@@ -69,30 +69,28 @@ func (b *Bucket[T]) Start() {
 			return
 		case <-timer.C:
 			if len(b.data) > 0 {
-				b.process()
+				b.process(timer)
 			}
-			timer.Stop()
-			timer.Reset(b.interval)
 		default:
 			if uint(len(b.data)) >= b.threshold {
-				timer.Stop()
-				b.process()
-				timer.Reset(b.interval)
+				b.process(timer)
 			}
 		}
 	}
 }
 
-func (b *Bucket[T]) process() {
+func (b *Bucket[T]) process(timer *time.Timer) {
 
 	b.lock.Lock()
 	defer func() {
 		b.lock.Unlock()
 	}()
 
+	timer.Stop()
 	if b.handler != nil {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
+	timer.Reset(b.interval)
 
 	b.data = make([]T, 0)
 }
