@@ -90,9 +90,7 @@ func (b *Bucket[T]) Start() {
 			b.closed = true
 			return
 		case <-timer.C:
-			if len(b.data) > 0 {
-				b.process(timer)
-			}
+			b.process(timer)
 		default:
 			if uint(len(b.data)) >= b.threshold {
 				b.process(timer)
@@ -108,9 +106,11 @@ func (b *Bucket[T]) process(timer *time.Timer) {
 		b.lock.Unlock()
 	}()
 
-	if b.handler != nil {
+	timer.Stop()
+	if b.handler != nil && len(b.data) > 0 {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
+
 	b.data = make([]T, 0)
 	b.now = time.Now()
 	timer.Reset(b.interval)
