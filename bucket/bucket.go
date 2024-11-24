@@ -92,7 +92,10 @@ func (b *Bucket[T]) Start() {
 		case <-timer.C:
 			b.process(timer)
 		default:
-			if uint(len(b.data)) >= b.threshold {
+			b.lock.Lock()
+			l := len(b.data)
+			b.lock.Unlock()
+			if uint(l) >= b.threshold {
 				b.process(timer)
 			}
 		}
