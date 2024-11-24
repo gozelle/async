@@ -108,7 +108,6 @@ func (b *Bucket[T]) process(timer *time.Timer) {
 		b.lock.Unlock()
 	}()
 
-	timer.Stop()
 	if b.handler != nil {
 		b.handler(b.done, append([]T{}, b.data...))
 	}
