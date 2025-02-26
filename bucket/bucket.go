@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Handler[T any] func(done <-chan struct{}, data []T)
+type Handler[T any] func(data []T)
 
 func NewBucket[T any](threshold uint, interval time.Duration, handler Handler[T]) *Bucket[T] {
 	return &Bucket[T]{
@@ -14,7 +14,6 @@ func NewBucket[T any](threshold uint, interval time.Duration, handler Handler[T]
 		threshold: threshold,
 		interval:  interval,
 		handler:   handler,
-		done:      make(chan struct{}),
 	}
 }
 
@@ -111,7 +110,7 @@ func (b *Bucket[T]) process(timer *time.Timer) {
 
 	timer.Stop()
 	if b.handler != nil && len(b.data) > 0 {
-		b.handler(b.done, append([]T{}, b.data...))
+		b.handler(append([]T{}, b.data...))
 	}
 
 	b.data = make([]T, 0)
